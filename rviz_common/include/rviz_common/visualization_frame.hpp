@@ -290,6 +290,10 @@ protected Q_SLOTS:
   /// Handle event to open the new tool dialog.
   void
   openNewToolDialog();
+  
+  /// Handle event to open the welcome dialog.
+  void
+  openWelcomeDialog();
 
   /// Handle event to show the help panel.
   void
@@ -491,6 +495,10 @@ protected:
   QMenu * view_menu_;
   QMenu * delete_view_menu_;
   QMenu * plugins_menu_;
+  //Sura menus
+  QMenu * graphics_menu_;
+  QMenu * actuators_menu_;
+  QMenu * sensors_menu_;
 
   QToolBar * toolbar_;
 

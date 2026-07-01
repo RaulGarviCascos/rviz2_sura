@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz_common/visualization_frame.hpp"
+#include "../../include/rviz_common/visualization_frame.hpp"
 
 #include <exception>
 #include <fstream>
@@ -77,6 +77,7 @@
 #include "./failed_panel.hpp"
 #include "./loading_dialog.hpp"
 #include "./new_object_dialog.hpp"
+#include "./welcome_dialog.hpp"
 #include "./panel_factory.hpp"
 #include "./screenshot_dialog.hpp"
 #include "./splash_screen.hpp"
@@ -373,6 +374,9 @@ void VisualizationFrame::initialize(
   connect(
     manager_, SIGNAL(statusUpdate(const QString&)), this,
     SIGNAL(statusUpdate(const QString&)));
+
+  openWelcomeDialog();
+
 }
 
 VisualizationManager *
@@ -506,6 +510,11 @@ void VisualizationFrame::initMenus()
   help_menu->addAction("Open rviz wiki in browser", this, SLOT(onHelpWiki()));
   help_menu->addSeparator();
   help_menu->addAction("&About", this, SLOT(onHelpAbout()));
+  //Sura menus
+  QMenu * graphics_menu = menuBar()->addMenu("&Graphics");
+  QMenu * actuators_menu = menuBar()->addMenu("&Actuators");
+  QMenu * sensors_menu = menuBar()->addMenu("&Sensors");
+
 }
 
 void VisualizationFrame::initToolbars()
@@ -616,6 +625,22 @@ void VisualizationFrame::openNewPanelDialog()
     this);
   if (dialog->exec() == QDialog::Accepted) {
     addPanelByName(display_name, class_id);
+  }
+}
+void VisualizationFrame::openWelcomeDialog()
+{
+  rviz_common::WelcomeDialog dialog(this);
+ 
+  QString robot_name;
+  if (dialog.exec() == QDialog::Accepted) {
+    robot_name = dialog.getRobotName();
+    if (robot_name.isEmpty()) {
+      robot_name = "RobotNameDefault";
+    }
+    RCLCPP_INFO(rclcpp::get_logger("rviz2"), "Nombre del robot: %s", robot_name.toStdString().c_str());
+  } else {
+    robot_name = "RobotNameDefault";
+    RCLCPP_INFO(rclcpp::get_logger("rviz2"), "El usuario ha cerrado o cancelado el diálogo. Nombre del robot establecido en: %s", robot_name.toStdString().c_str());
   }
 }
 

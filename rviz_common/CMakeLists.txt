@@ -126,6 +126,7 @@ set(rviz_common_headers_to_moc
   src/rviz_common/views_panel.hpp
   include/rviz_common/visualization_frame.hpp
   src/rviz_common/widget_geometry_change_detector.hpp
+  src/rviz_common/welcome_dialog.hpp
   include/rviz_common/ros_topic_display.hpp
 )
 
@@ -218,6 +219,7 @@ set(rviz_common_source_files
   src/rviz_common/visualization_frame.cpp
   src/rviz_common/visualization_manager.cpp
   src/rviz_common/visualizer_app.cpp
+  src/rviz_common/welcome_dialog.cpp
   src/rviz_common/widget_geometry_change_detector.cpp
   src/rviz_common/yaml_config_reader.cpp
   src/rviz_common/yaml_config_writer.cpp

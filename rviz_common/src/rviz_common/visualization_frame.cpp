@@ -57,6 +57,7 @@
 #include <QTimer>  // NOLINT cpplint cannot handle include order here
 #include <QToolBar>  // NOLINT cpplint cannot handle include order here
 #include <QToolButton>  // NOLINT cpplint cannot handle include order here
+#include <QSettings>  // NOLINT cpplint cannot handle include order here
 
 #include "rclcpp/clock.hpp"
 #include "rcpputils/filesystem_helper.hpp"
@@ -375,8 +376,6 @@ void VisualizationFrame::initialize(
     manager_, SIGNAL(statusUpdate(const QString&)), this,
     SIGNAL(statusUpdate(const QString&)));
 
-  openWelcomeDialog();
-
 }
 
 VisualizationManager *
@@ -627,21 +626,24 @@ void VisualizationFrame::openNewPanelDialog()
     addPanelByName(display_name, class_id);
   }
 }
+
+void VisualizationFrame::setRobotName(QString robot_name){
+  if (manager_) {
+    manager_->setRobotName(robot_name);
+  }
+}
 void VisualizationFrame::openWelcomeDialog()
 {
   rviz_common::WelcomeDialog dialog(this);
- 
   QString robot_name;
   if (dialog.exec() == QDialog::Accepted) {
     robot_name = dialog.getRobotName();
-    if (robot_name.isEmpty()) {
-      robot_name = "RobotNameDefault";
-    }
-    RCLCPP_INFO(rclcpp::get_logger("rviz2"), "Nombre del robot: %s", robot_name.toStdString().c_str());
-  } else {
-    robot_name = "RobotNameDefault";
-    RCLCPP_INFO(rclcpp::get_logger("rviz2"), "El usuario ha cerrado o cancelado el diálogo. Nombre del robot establecido en: %s", robot_name.toStdString().c_str());
   }
+  if (robot_name.isEmpty()) {
+    robot_name = "RobotNameDefault";
+  }
+  setRobotName(robot_name);
+  
 }
 
 void VisualizationFrame::openNewToolDialog()
@@ -846,6 +848,7 @@ void VisualizationFrame::save(Config config)
   manager_->save(config.mapMakeChild("Visualization Manager"));
   savePanels(config.mapMakeChild("Panels"));
   saveWindowGeometry(config.mapMakeChild("Window Geometry"));
+  saveRobotName(config);
 }
 
 void VisualizationFrame::load(const Config & config)
@@ -853,8 +856,26 @@ void VisualizationFrame::load(const Config & config)
   manager_->load(config.mapGetChild("Visualization Manager"));
   loadPanels(config.mapGetChild("Panels"));
   loadWindowGeometry(config.mapGetChild("Window Geometry"));
+  loadRobotName(config.mapGetChild("RobotNameForProject"));
 }
 
+void VisualizationFrame::loadRobotName(const Config & robot_name_config)
+{
+  if (robot_name_config.isValid()) {
+    QString robot_name = "";
+    if (robot_name_config.getType() == Config::Value) {
+      robot_name = robot_name_config.getValue().toString();
+      RCLCPP_INFO(rclcpp::get_logger("rviz2"), "The current robot name is: %s", robot_name.toStdString().c_str());
+    }
+    if (!robot_name.isEmpty()) {
+      manager_->setRobotName(robot_name); 
+    } else {
+      openWelcomeDialog(); 
+    }
+  } else {
+    openWelcomeDialog();
+  }
+}
 void VisualizationFrame::loadWindowGeometry(const Config & config)
 {
   int x, y;
@@ -896,6 +917,13 @@ void VisualizationFrame::loadWindowGeometry(const Config & config)
   config.mapGetBool("Hide Right Dock", &b);
   hideRightDock(b);
   hide_right_dock_button_->setChecked(b);
+}
+
+void VisualizationFrame::saveRobotName(Config config)
+{
+  if (manager_) {
+    config.mapSetValue("RobotNameForProject", manager_->getRobotName());
+  }
 }
 
 void VisualizationFrame::saveWindowGeometry(Config config)

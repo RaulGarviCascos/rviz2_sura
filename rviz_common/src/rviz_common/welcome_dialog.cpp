@@ -1,4 +1,5 @@
 #include "./welcome_dialog.hpp"
+#include <ament_index_cpp/get_package_share_directory.hpp>
 namespace rviz_common
 {
 
@@ -9,7 +10,8 @@ WelcomeDialog::WelcomeDialog(QWidget * parent)
   setMinimumWidth(500); 
 
   QLabel * image_label = new QLabel(this);
-  QString ruta_imagen = "rviz_common/images/welcome_image.png";
+  std::string package_share_dir = ament_index_cpp::get_package_share_directory("rviz_common");
+  QString ruta_imagen = QString::fromStdString(package_share_dir) + "/images/welcome_image.png";
   QPixmap pixmap(ruta_imagen);
 
   if (pixmap.isNull()) {

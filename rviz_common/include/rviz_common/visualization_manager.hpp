@@ -180,6 +180,12 @@ public:
    */
   void setFixedFrame(const QString & frame);
 
+  /// Set the name of the robot for which we are displaying data.
+  void setRobotName(const QString & name) { robot_name_ = name; }
+  
+  /// Return the name of the robot for which we are displaying data.
+  QString getRobotName() const { return robot_name_; }
+
   /// Return the Ogre::SceneManager used for the main RenderPanel.
   Ogre::SceneManager * getSceneManager() const override;
 
@@ -411,6 +417,7 @@ private:
   rclcpp::executors::SingleThreadedExecutor::SharedPtr executor_;
   ros_integration::RosNodeAbstractionIface::WeakPtr rviz_ros_node_;
   rviz_common::transformation::TransformationManager * transformation_manager_;
+  QString robot_name_;
 };
 
 }  // namespace rviz_common

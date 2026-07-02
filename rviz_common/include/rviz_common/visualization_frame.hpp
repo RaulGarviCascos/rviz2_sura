@@ -245,6 +245,9 @@ public Q_SLOTS:
   void
   setStatus(const QString & message) override;
 
+  //Set the name in the manager
+  void setRobotName(QString robot_name);
+
 Q_SIGNALS:
   /// Emitted during file-loading and initialization to indicate progress.
   void
@@ -450,10 +453,17 @@ protected:
   void
   savePanels(Config config);
 
+  /// Loads the robot name from the given Config object.
+  void 
+  loadRobotName(const Config & robot_config);
+
   /// Restore the window's geometry from the given Config object.
   void
   loadWindowGeometry(const Config & config);
 
+  /// Save the robot name to the given Config object.
+  void
+  saveRobotName(Config config);
   /// Save the window's geometry to the given Config object.
   void
   saveWindowGeometry(Config config);

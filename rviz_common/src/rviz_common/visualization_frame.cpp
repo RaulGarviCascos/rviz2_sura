@@ -509,12 +509,31 @@ void VisualizationFrame::initMenus()
   help_menu->addAction("Open rviz wiki in browser", this, SLOT(onHelpWiki()));
   help_menu->addSeparator();
   help_menu->addAction("&About", this, SLOT(onHelpAbout()));
-  //Sura menus
-  QMenu * graphics_menu = menuBar()->addMenu("&Graphics");
-  QMenu * actuators_menu = menuBar()->addMenu("&Actuators");
-  QMenu * sensors_menu = menuBar()->addMenu("&Sensors");
 
+  //Sura menus
+  QAction * sura_direct_action = menuBar()->addAction("&SURA");
+  connect(sura_direct_action, &QAction::triggered, this, &VisualizationFrame::changeToSura);
+  QAction * rviz_direct_action = menuBar()->addAction("&RViz");
+  connect(rviz_direct_action, &QAction::triggered, this, &VisualizationFrame::changeToRviz);
 }
+
+void VisualizationFrame::changeToRviz()
+{
+  manager_->setIsSura(false); 
+  setDisplayConfigFile(display_config_file_); 
+  render_panel_->setVisible(true);
+  
+}
+void VisualizationFrame::changeToSura()
+{
+  manager_->setIsSura(true); 
+  setDisplayConfigFile(display_config_file_); 
+  render_panel_->setVisible(false);
+  openWelcomeDialog();
+}
+
+
+
 
 void VisualizationFrame::initToolbars()
 {
@@ -634,15 +653,21 @@ void VisualizationFrame::setRobotName(QString robot_name){
 }
 void VisualizationFrame::openWelcomeDialog()
 {
-  rviz_common::WelcomeDialog dialog(this);
+  rviz_common::WelcomeDialog dialog(this, this->getManager());
   QString robot_name;
   if (dialog.exec() == QDialog::Accepted) {
-    robot_name = dialog.getRobotName();
+    robot_name = dialog.getRobotName(true);
+  }else {
+    robot_name = dialog.getRobotName(false);
   }
   if (robot_name.isEmpty()) {
     robot_name = "RobotNameDefault";
   }
-  setRobotName(robot_name);
+  if(robot_name!=manager_->getRobotName()){
+    setDisplayConfigModified();
+    setRobotName(robot_name);
+  }
+  
   
 }
 
@@ -788,12 +813,13 @@ void VisualizationFrame::setDisplayConfigFile(const std::string & path)
 {
   display_config_file_ = path;
   std::string title;
+  std::string mode = manager_->getIsSura() ? "SURA" : "RViz";
 
   if (display_title_format_.empty()) {
     if (path == default_display_config_file_) {
-      title = "RViz[*]";
+      title = std::string(mode) + "[*]";
     } else {
-      title = QDir::toNativeSeparators(QString::fromStdString(path)).toStdString() + "[*] - RViz";
+      title = QDir::toNativeSeparators(QString::fromStdString(path)).toStdString() + "[*] - " + mode;
     }
   } else {
     auto find_and_replace_token =

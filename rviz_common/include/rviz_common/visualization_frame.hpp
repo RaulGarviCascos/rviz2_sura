@@ -245,8 +245,7 @@ public Q_SLOTS:
   void
   setStatus(const QString & message) override;
 
-  //Set the name in the manager
-  void setRobotName(QString robot_name);
+  
 
 Q_SIGNALS:
   /// Emitted during file-loading and initialization to indicate progress.
@@ -301,6 +300,15 @@ protected Q_SLOTS:
   /// Handle event to show the help panel.
   void
   showHelpPanel();
+
+  void
+  changeToRviz();
+
+  void
+  changeToSura();
+  
+  //Set the name in the settings and in the manager
+  void setRobotName(QString robot_name);
 
   /// Remove a the tool whose name is given by remove_tool_menu_action->text().
   void

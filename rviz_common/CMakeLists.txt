@@ -128,6 +128,7 @@ set(rviz_common_headers_to_moc
   src/rviz_common/widget_geometry_change_detector.hpp
   src/rviz_common/welcome_dialog.hpp
   include/rviz_common/ros_topic_display.hpp
+  include/rviz_common/sura/sura_bf.hpp
 )
 
 foreach(header "${rviz_common_headers_to_moc}")
@@ -228,6 +229,7 @@ set(rviz_common_source_files
 add_library(rviz_common SHARED
   ${rviz_common_moc_files}
   ${rviz_common_source_files}
+  src/rviz_common/sura/sura_bf.cpp
 )
 
 target_include_directories(rviz_common

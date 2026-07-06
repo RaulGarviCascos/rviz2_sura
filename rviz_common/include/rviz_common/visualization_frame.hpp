@@ -46,6 +46,8 @@
 #include "rviz_rendering/render_window.hpp"
 #include "rviz_common/window_manager_interface.hpp"
 #include "rviz_common/ros_integration/ros_node_abstraction_iface.hpp"
+#include "rviz_common/sura/sura_bf.hpp"
+
 
 class QAction;
 class QActionGroup;
@@ -168,8 +170,7 @@ public:
    * a display config.
    */
   void
-  loadPersistentSettings();
-
+ loadPersistentSettings();
   /// Save the "general", persistent settings to a file.
   /**
    * This config file has a few things which should not be saved within
@@ -297,15 +298,12 @@ protected Q_SLOTS:
   void
   openWelcomeDialog();
 
+  void 
+  onTabChanged(int index);
+
   /// Handle event to show the help panel.
   void
   showHelpPanel();
-
-  void
-  changeToRviz();
-
-  void
-  changeToSura();
   
   //Set the name in the settings and in the manager
   void setRobotName(QString robot_name);
@@ -575,6 +573,10 @@ protected:
   bool toolbar_visible_;
 
   ros_integration::RosNodeAbstractionIface::WeakPtr rviz_ros_node_;
+  QStringList paneles_visibles_guardados_;
+  QStringList toolbars_visibles_guardadas_;
+  SuraBF * sura_block_;
+  bool last_tab_was_rviz_ = false;
 };
 
 }  // namespace rviz_common

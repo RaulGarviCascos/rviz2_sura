@@ -1,6 +1,7 @@
 #include "rviz_common/sura/sura_bf.hpp"
 #include "rviz_common/visualization_frame.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "thrusters_panel.hpp"
 
 SuraBF::SuraBF(rviz_common::VisualizationFrame * frame,  QObject * parent)
 : QObject(parent),
@@ -8,7 +9,7 @@ SuraBF::SuraBF(rviz_common::VisualizationFrame * frame,  QObject * parent)
   tab_widget_(nullptr),
   sensors_tab_(nullptr),
   graphics_tab_(nullptr),
-  actuators_tab_(nullptr),
+  Thrusters_tab_(nullptr),
   settings_tab_(nullptr),
   rviz_3d_tab_(nullptr)
 {
@@ -31,13 +32,13 @@ void SuraBF::initSuraUi(QWidget * rviz_render_panel)
 
   sensors_tab_ = createSensorsWidget();
   graphics_tab_ = createGraphicsWidget();
-  actuators_tab_ = createActuatorsWidget();
+  Thrusters_tab_ = createThrustersWidget();
   settings_tab_ = createSettingsWidget();
   rviz_3d_tab_ = createRviz3DWidget(rviz_render_panel);
 
   tab_widget_->addTab(sensors_tab_, tr("Sensors"));
   tab_widget_->addTab(graphics_tab_, tr("Graphics"));
-  tab_widget_->addTab(actuators_tab_, tr("Actuators"));
+  tab_widget_->addTab(Thrusters_tab_, tr("Thursters"));
   tab_widget_->addTab(settings_tab_, tr("Settings"));
   tab_widget_->addTab(rviz_3d_tab_, tr("3D View"));
   connect(tab_widget_, &QTabWidget::currentChanged, this, [this](int index) {
@@ -79,17 +80,11 @@ QWidget * SuraBF::createGraphicsWidget()
   return widget;
 }
 
-QWidget * SuraBF::createActuatorsWidget()
+QWidget * SuraBF::createThrustersWidget()
 {
-  QWidget * widget = new QWidget(tab_widget_);
-  QVBoxLayout * layout = new QVBoxLayout(widget);
-
-  QLabel * label = new QLabel(tr("Actuadores"), widget);
-  label->setAlignment(Qt::AlignCenter);
-
-  layout->addWidget(label);
-  widget->setLayout(layout);
-  return widget;
+  ThrustersPanel * Thrusters_panel = new ThrustersPanel(frame_->getManager(),tab_widget_);
+  
+  return Thrusters_panel;
 }
 
 QWidget * SuraBF::createSettingsWidget()

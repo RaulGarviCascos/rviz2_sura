@@ -35,7 +35,7 @@ signals:
 private:
   QWidget * createSensorsWidget();
   QWidget * createGraphicsWidget();
-  QWidget * createActuatorsWidget();
+  QWidget * createThrustersWidget();
   QWidget * createSettingsWidget();
   QWidget * createRviz3DWidget(QWidget * rviz_render_panel);
 
@@ -44,7 +44,7 @@ private:
 
   QWidget * sensors_tab_;
   QWidget * graphics_tab_;
-  QWidget * actuators_tab_;
+  QWidget * Thrusters_tab_;
   QWidget * settings_tab_;
   QWidget * rviz_3d_tab_;
 };

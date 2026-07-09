@@ -46,6 +46,7 @@ find_package(tf2_ros REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(urdf REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
+find_package(controller_manager_msgs REQUIRED)
 
 find_package(TinyXML2 REQUIRED)  # provided by tinyxml_vendor
 
@@ -128,6 +129,10 @@ set(rviz_common_headers_to_moc
   src/rviz_common/widget_geometry_change_detector.hpp
   src/rviz_common/welcome_dialog.hpp
   include/rviz_common/ros_topic_display.hpp
+  include/rviz_common/sura/sura_bf.hpp
+  src/rviz_common/sura/thrusters_panel.hpp
+  src/rviz_common/sura/thruster.hpp
+  src/rviz_common/sura/sura_button.hpp
 )
 
 foreach(header "${rviz_common_headers_to_moc}")
@@ -228,6 +233,10 @@ set(rviz_common_source_files
 add_library(rviz_common SHARED
   ${rviz_common_moc_files}
   ${rviz_common_source_files}
+  src/rviz_common/sura/sura_bf.cpp
+  src/rviz_common/sura/thrusters_panel.cpp
+  src/rviz_common/sura/thruster.cpp
+  src/rviz_common/sura/sura_button.cpp
 )
 
 target_include_directories(rviz_common
@@ -259,6 +268,7 @@ ament_target_dependencies(rviz_common
   tinyxml2_vendor
   urdf
   yaml_cpp_vendor
+  controller_manager_msgs
 )
 # Causes the visibility macros to use dllexport rather than dllimport,
 # which is appropriate when building the dll but not consuming it.
@@ -276,6 +286,7 @@ ament_export_dependencies(
   tf2_ros
   urdf
   yaml_cpp_vendor
+  controller_manager_msgs
 )
 
 # Export old-style CMake variables

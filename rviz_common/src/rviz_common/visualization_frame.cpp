@@ -251,7 +251,6 @@ void VisualizationFrame::initialize(
   const QString & display_config_file)
 {
   initConfigs();
-
   loadPersistentSettings();
 
   QDir app_icon_path(QString::fromStdString(package_path_) + "/icons/package.png");
@@ -300,9 +299,10 @@ void VisualizationFrame::initialize(
   hide_right_dock_button_->setCheckable(true);
 
   connect(hide_right_dock_button_, SIGNAL(toggled(bool)), this, SLOT(hideRightDock(bool)));
-
+  
+ 
   central_layout->addWidget(hide_left_dock_button_, 0);
-  central_layout->addWidget(render_panel_, 1);
+  // central_layout->addWidget(render_panel_, 1);
   central_layout->addWidget(hide_right_dock_button_, 0);
 
   central_widget->setLayout(central_layout);
@@ -356,11 +356,29 @@ void VisualizationFrame::initialize(
   // Periodically process events for the splash screen.
   if (app_) {app_->processEvents();}
 
-  if (display_config_file != "") {
-    loadDisplayConfig(display_config_file);
-  } else {
-    loadDisplayConfig(QString::fromStdString(default_display_config_file_));
+  QString ruta_config = (display_config_file != "") ? 
+                        display_config_file : 
+                        QString::fromStdString(default_display_config_file_);
+
+
+  loadDisplayConfig(ruta_config);
+  paneles_visibles_guardados_.clear();
+  for (QDockWidget* dock : findChildren<QDockWidget*>()) {
+    if (!dock->isHidden()) { 
+      paneles_visibles_guardados_.append(dock->windowTitle());
+    }
   }
+  toolbars_visibles_guardadas_.clear();
+  for (QToolBar* toolbar : findChildren<QToolBar*>()) {
+    if (!toolbar->isHidden()) {
+      QString id = toolbar->objectName().isEmpty() ? toolbar->windowTitle() : toolbar->objectName();
+      toolbars_visibles_guardadas_.append(id);
+    }
+  }
+  sura_block_ = new SuraBF(this);
+  sura_block_->initSuraUi(render_panel_);
+  central_layout->addWidget(sura_block_->getWidget(), 1);
+  connect(sura_block_, &SuraBF::tabChanged, this, &VisualizationFrame::onTabChanged);
 
   // Periodically process events for the splash screen.
   if (app_) {app_->processEvents();}
@@ -375,6 +393,9 @@ void VisualizationFrame::initialize(
   connect(
     manager_, SIGNAL(statusUpdate(const QString&)), this,
     SIGNAL(statusUpdate(const QString&)));
+
+  sura_block_->getWidget()->setCurrentIndex(0);
+  onTabChanged(0);
 
 }
 
@@ -416,8 +437,8 @@ void VisualizationFrame::initConfigs()
 
 void VisualizationFrame::loadPersistentSettings()
 {
-  YamlConfigReader reader;
   Config config;
+  YamlConfigReader reader;
   reader.readFile(config, QString::fromStdString(persistent_settings_file_));
   if (!reader.error()) {
     QString last_config_dir, last_image_dir;
@@ -509,12 +530,10 @@ void VisualizationFrame::initMenus()
   help_menu->addAction("Open rviz wiki in browser", this, SLOT(onHelpWiki()));
   help_menu->addSeparator();
   help_menu->addAction("&About", this, SLOT(onHelpAbout()));
-  //Sura menus
-  QMenu * graphics_menu = menuBar()->addMenu("&Graphics");
-  QMenu * actuators_menu = menuBar()->addMenu("&Actuators");
-  QMenu * sensors_menu = menuBar()->addMenu("&Sensors");
 
 }
+
+
 
 void VisualizationFrame::initToolbars()
 {
@@ -634,16 +653,67 @@ void VisualizationFrame::setRobotName(QString robot_name){
 }
 void VisualizationFrame::openWelcomeDialog()
 {
-  rviz_common::WelcomeDialog dialog(this);
+  rviz_common::WelcomeDialog dialog(this, this->getManager());
   QString robot_name;
   if (dialog.exec() == QDialog::Accepted) {
-    robot_name = dialog.getRobotName();
+    robot_name = dialog.getRobotName(true);
+  }else {
+    robot_name = dialog.getRobotName(false);
   }
   if (robot_name.isEmpty()) {
     robot_name = "RobotNameDefault";
   }
-  setRobotName(robot_name);
+  if(robot_name!=manager_->getRobotName()){
+    setDisplayConfigModified();
+    setRobotName(robot_name);
+  }
   
+}
+void VisualizationFrame::onTabChanged(int index)
+{
+  QList<QDockWidget*> dock_panels = findChildren<QDockWidget*>();
+  QList<QToolBar*> toolbars = findChildren<QToolBar*>();
+  if (index == 4) {     
+    if (!paneles_visibles_guardados_.isEmpty()) {
+      for (QDockWidget* dock : dock_panels) {
+        dock->setVisible(paneles_visibles_guardados_.contains(dock->windowTitle()));
+      }
+    } 
+    if (!toolbars_visibles_guardadas_.isEmpty()) {
+      for (QToolBar* toolbar : toolbars) {
+        QString id = toolbar->objectName().isEmpty() ? toolbar->windowTitle() : toolbar->objectName();
+        toolbar->setVisible(toolbars_visibles_guardadas_.contains(id));
+      }
+    } else {
+      for (QToolBar* toolbar : toolbars) toolbar->setVisible(true);
+    }
+    last_tab_was_rviz_ = true;
+  } 
+  else {
+    if (last_tab_was_rviz_) {
+      paneles_visibles_guardados_.clear();
+      for (QDockWidget* dock : dock_panels) {
+        if (dock->isVisible()) {
+          paneles_visibles_guardados_.append(dock->windowTitle());
+        }
+      }
+      toolbars_visibles_guardadas_.clear();
+      for (QToolBar* toolbar : toolbars) {
+        if (toolbar->isVisible()) {
+          QString id = toolbar->objectName().isEmpty() ? toolbar->windowTitle() : toolbar->objectName();
+          toolbars_visibles_guardadas_.append(id);
+        }
+      }
+    }
+
+    for (QDockWidget* dock : dock_panels) {
+      dock->setVisible(false);
+    }
+    for (QToolBar* toolbar : toolbars) {
+      toolbar->setVisible(false);
+    }
+    last_tab_was_rviz_ = false;
+  }
 }
 
 void VisualizationFrame::openNewToolDialog()
@@ -788,12 +858,13 @@ void VisualizationFrame::setDisplayConfigFile(const std::string & path)
 {
   display_config_file_ = path;
   std::string title;
+  std::string mode = manager_->getIsSura() ? "SURA" : "RViz";
 
   if (display_title_format_.empty()) {
     if (path == default_display_config_file_) {
-      title = "RViz[*]";
+      title = std::string(mode) + "[*]";
     } else {
-      title = QDir::toNativeSeparators(QString::fromStdString(path)).toStdString() + "[*] - RViz";
+      title = QDir::toNativeSeparators(QString::fromStdString(path)).toStdString() + "[*] - " + mode;
     }
   } else {
     auto find_and_replace_token =
@@ -821,11 +892,33 @@ void VisualizationFrame::setDisplayConfigFile(const std::string & path)
 
 bool VisualizationFrame::saveDisplayConfig(const QString & path)
 {
+  bool in_sura_tabs = !last_tab_was_rviz_;
+
+  QList<QDockWidget*> dock_panels = findChildren<QDockWidget*>();
+  QList<QToolBar*> toolbars = findChildren<QToolBar*>();
+  if (in_sura_tabs) {
+    for (QDockWidget* dock : dock_panels) {
+      dock->setVisible(paneles_visibles_guardados_.contains(dock->windowTitle()));
+    }
+    for (QToolBar* toolbar : toolbars) {
+      QString id = toolbar->objectName().isEmpty() ? toolbar->windowTitle() : toolbar->objectName();
+      toolbar->setVisible(toolbars_visibles_guardadas_.contains(id));
+    }
+  }
   Config config;
   save(config);
 
   YamlConfigWriter writer;
   writer.writeFile(config, path);
+
+  if (in_sura_tabs) {
+    for (QDockWidget* dock : dock_panels) {
+      dock->setVisible(false);
+    }
+    for (QToolBar* toolbar : toolbars) {
+      toolbar->setVisible(false);
+    }
+  }
 
   if (writer.error()) {
     RVIZ_COMMON_LOG_ERROR(qPrintable(writer.errorMessage()));

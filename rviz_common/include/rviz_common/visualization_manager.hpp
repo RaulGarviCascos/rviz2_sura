@@ -183,6 +183,16 @@ public:
   /// Set the name of the robot for which we are displaying data.
   void setRobotName(const QString & name) { robot_name_ = name; }
   
+  /// Set if you are in SURA mode or RVIZ mode
+  void setIsSura(bool is_sura){
+    is_sura_ = is_sura;
+  };
+
+  /// Return if you are in SURA mode or RVIZ mode
+  bool getIsSura() const{
+    return is_sura_;
+  };
+  
   /// Return the name of the robot for which we are displaying data.
   QString getRobotName() const { return robot_name_; }
 
@@ -418,6 +428,7 @@ private:
   ros_integration::RosNodeAbstractionIface::WeakPtr rviz_ros_node_;
   rviz_common::transformation::TransformationManager * transformation_manager_;
   QString robot_name_;
+  bool is_sura_;
 };
 
 }  // namespace rviz_common

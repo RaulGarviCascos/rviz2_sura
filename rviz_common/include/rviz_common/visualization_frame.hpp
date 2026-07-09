@@ -513,7 +513,7 @@ protected:
   QMenu * plugins_menu_;
   //Sura menus
   QMenu * graphics_menu_;
-  QMenu * actuators_menu_;
+  QMenu * Thrusters_menu_;
   QMenu * sensors_menu_;
 
   QToolBar * toolbar_;

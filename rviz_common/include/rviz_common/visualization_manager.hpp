@@ -45,6 +45,8 @@
 #include "rviz_common/frame_manager_iface.hpp"
 #include "rviz_common/ros_integration/ros_node_abstraction_iface.hpp"
 #include "rviz_common/transformation/transformation_manager.hpp"
+#include "../../rviz_common/src/rviz_common/sura/components/robot_config.hpp"
+
 
 class QTimer;
 
@@ -180,9 +182,9 @@ public:
    */
   void setFixedFrame(const QString & frame);
 
-  /// Set the name of the robot for which we are displaying data.
-  void setRobotName(const QString & name) { robot_name_ = name; }
-  
+  /// Set the config of the robot for which we are displaying data.
+  void setRobotConfig(const RobotConfig &r_config){robot_config_ = r_config;}
+
   /// Set if you are in SURA mode or RVIZ mode
   void setIsSura(bool is_sura){
     is_sura_ = is_sura;
@@ -193,9 +195,9 @@ public:
     return is_sura_;
   };
   
-  /// Return the name of the robot for which we are displaying data.
-  QString getRobotName() const { return robot_name_; }
-
+  /// Return the config of the robot for which we are displaying data.
+  RobotConfig getRobotConfig(){return robot_config_;}
+  
   /// Return the Ogre::SceneManager used for the main RenderPanel.
   Ogre::SceneManager * getSceneManager() const override;
 
@@ -427,7 +429,7 @@ private:
   rclcpp::executors::SingleThreadedExecutor::SharedPtr executor_;
   ros_integration::RosNodeAbstractionIface::WeakPtr rviz_ros_node_;
   rviz_common::transformation::TransformationManager * transformation_manager_;
-  QString robot_name_;
+  RobotConfig robot_config_;
   bool is_sura_;
 };
 

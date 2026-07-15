@@ -47,7 +47,7 @@
 #include "rviz_common/window_manager_interface.hpp"
 #include "rviz_common/ros_integration/ros_node_abstraction_iface.hpp"
 #include "rviz_common/sura/sura_bf.hpp"
-
+#include "../../rviz_common/src/rviz_common/sura/components/robot_config.hpp"
 
 class QAction;
 class QActionGroup;
@@ -237,6 +237,10 @@ public:
     Qt::DockWidgetArea area = Qt::LeftDockWidgetArea,
     bool floating = true);
 
+    ///save the new robot config from other class.
+    void 
+    saveNewRobotConfig(const RobotConfig &r_config);
+
 public Q_SLOTS:
   /// Notification that something would change in the display config if saved.
   void
@@ -306,7 +310,7 @@ protected Q_SLOTS:
   showHelpPanel();
   
   //Set the name in the settings and in the manager
-  void setRobotName(QString robot_name);
+  void setRobotConfig(const RobotConfig &r_config);
 
   /// Remove a the tool whose name is given by remove_tool_menu_action->text().
   void
@@ -461,7 +465,7 @@ protected:
 
   /// Loads the robot name from the given Config object.
   void 
-  loadRobotName(const Config & robot_config);
+  loadRobotConfig(const Config & robot_config);
 
   /// Restore the window's geometry from the given Config object.
   void
@@ -469,7 +473,9 @@ protected:
 
   /// Save the robot name to the given Config object.
   void
-  saveRobotName(Config config);
+  saveRobotConfig(Config config);
+
+
   /// Save the window's geometry to the given Config object.
   void
   saveWindowGeometry(Config config);

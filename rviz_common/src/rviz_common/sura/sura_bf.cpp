@@ -1,7 +1,8 @@
 #include "rviz_common/sura/sura_bf.hpp"
 #include "rviz_common/visualization_frame.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "thrusters_panel.hpp"
+#include "tabs/thrusters_panel.hpp"
+#include "tabs/settings_panel.hpp"
 
 SuraBF::SuraBF(rviz_common::VisualizationFrame * frame,  QObject * parent)
 : QObject(parent),
@@ -9,7 +10,7 @@ SuraBF::SuraBF(rviz_common::VisualizationFrame * frame,  QObject * parent)
   tab_widget_(nullptr),
   sensors_tab_(nullptr),
   graphics_tab_(nullptr),
-  Thrusters_tab_(nullptr),
+  thrusters_tab_(nullptr),
   settings_tab_(nullptr),
   rviz_3d_tab_(nullptr)
 {
@@ -32,13 +33,13 @@ void SuraBF::initSuraUi(QWidget * rviz_render_panel)
 
   sensors_tab_ = createSensorsWidget();
   graphics_tab_ = createGraphicsWidget();
-  Thrusters_tab_ = createThrustersWidget();
+  thrusters_tab_ = createThrustersWidget();
   settings_tab_ = createSettingsWidget();
   rviz_3d_tab_ = createRviz3DWidget(rviz_render_panel);
 
   tab_widget_->addTab(sensors_tab_, tr("Sensors"));
   tab_widget_->addTab(graphics_tab_, tr("Graphics"));
-  tab_widget_->addTab(Thrusters_tab_, tr("Thursters"));
+  tab_widget_->addTab(thrusters_tab_, tr("Thursters"));
   tab_widget_->addTab(settings_tab_, tr("Settings"));
   tab_widget_->addTab(rviz_3d_tab_, tr("3D View"));
   connect(tab_widget_, &QTabWidget::currentChanged, this, [this](int index) {
@@ -82,22 +83,17 @@ QWidget * SuraBF::createGraphicsWidget()
 
 QWidget * SuraBF::createThrustersWidget()
 {
-  ThrustersPanel * Thrusters_panel = new ThrustersPanel(frame_->getManager(),tab_widget_);
+  ThrustersPanel * thrusters_panel = new ThrustersPanel(frame_->getManager(),tab_widget_);
   
-  return Thrusters_panel;
+  return thrusters_panel;
 }
 
 QWidget * SuraBF::createSettingsWidget()
 {
-  QWidget * widget = new QWidget(tab_widget_);
-  QVBoxLayout * layout = new QVBoxLayout(widget);
 
-  QLabel * label = new QLabel(tr("Configuración"), widget);
-  label->setAlignment(Qt::AlignCenter);
-
-  layout->addWidget(label);
-  widget->setLayout(layout);
-  return widget;
+  SettingsPanel * settingsPanel = new SettingsPanel(frame_,tab_widget_);
+  
+  return settingsPanel;
 }
 
 QWidget * SuraBF::createRviz3DWidget(QWidget * rviz_render_panel)

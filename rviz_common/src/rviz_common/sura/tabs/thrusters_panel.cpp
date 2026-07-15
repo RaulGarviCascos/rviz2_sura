@@ -3,7 +3,7 @@
 #include "rviz_common/ros_integration/ros_node_abstraction_iface.hpp"
 #include <QVBoxLayout>
 #include <QLabel>
-#include "sura_button.hpp"
+#include "../components/sura_button.hpp" 
 #include "std_msgs/msg/float64_multi_array.hpp"
 #include <QTimer>
 #include <QResizeEvent>
@@ -11,7 +11,7 @@
 ThrustersPanel::ThrustersPanel(rviz_common::VisualizationManager * manager, QWidget *parent)
   : QWidget(parent), manager_(manager)
 {
-  QString robot_name = manager_->getRobotName();
+  QString robot_name = manager_->getRobotConfig().robot_name;
 
   auto ros_node = manager_->getRosNodeAbstraction().lock()->get_raw_node();
   thruster_pub_ = ros_node->create_publisher<std_msgs::msg::Float64MultiArray>(tr("/%1/controller/thruster_test_controller/commands").arg(robot_name).toStdString(), 10);
@@ -24,7 +24,7 @@ ThrustersPanel::ThrustersPanel(rviz_common::VisualizationManager * manager, QWid
   title->setAlignment(Qt::AlignCenter);
   QFont font = title->font();
   font.setBold(true);
-  font.setPointSize(12);
+  font.setPointSize(30);
   title->setFont(font);
   main_layout->addWidget(title);
 

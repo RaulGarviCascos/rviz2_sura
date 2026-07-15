@@ -130,9 +130,10 @@ set(rviz_common_headers_to_moc
   src/rviz_common/welcome_dialog.hpp
   include/rviz_common/ros_topic_display.hpp
   include/rviz_common/sura/sura_bf.hpp
-  src/rviz_common/sura/thrusters_panel.hpp
-  src/rviz_common/sura/thruster.hpp
-  src/rviz_common/sura/sura_button.hpp
+  src/rviz_common/sura/tabs/thrusters_panel.hpp
+  src/rviz_common/sura/tabs/settings_panel.hpp
+  src/rviz_common/sura/components/thruster.hpp
+  src/rviz_common/sura/components/sura_button.hpp
 )
 
 foreach(header "${rviz_common_headers_to_moc}")
@@ -234,9 +235,10 @@ add_library(rviz_common SHARED
   ${rviz_common_moc_files}
   ${rviz_common_source_files}
   src/rviz_common/sura/sura_bf.cpp
-  src/rviz_common/sura/thrusters_panel.cpp
-  src/rviz_common/sura/thruster.cpp
-  src/rviz_common/sura/sura_button.cpp
+  src/rviz_common/sura/tabs/thrusters_panel.cpp
+  src/rviz_common/sura/tabs/settings_panel.cpp
+  src/rviz_common/sura/components/thruster.cpp
+  src/rviz_common/sura/components/sura_button.cpp
 )
 
 target_include_directories(rviz_common

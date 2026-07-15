@@ -7,7 +7,7 @@
 #include <QLineEdit>
 #include "../components/sura_button.hpp"
 #include <QLabel>
-
+#include <QIcon>
 namespace rviz_common { class VisualizationFrame; }
 
 class SettingsPanel : public QWidget
@@ -34,6 +34,9 @@ private:
   void onSelectWorkspace();
   void onGetFileClicked();
   QLabel *title_label_;
+  QIcon *closed_eye_icon;
+  QIcon *opened_eye_icon;
+  
 
 // protected:
 //   void resizeEvent(QResizeEvent *event) override;

@@ -968,11 +968,9 @@ void VisualizationFrame::loadRobotConfig(const Config & robot_config)
       } 
     
     } else {
-      RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "Else 1");
       openWelcomeDialog(); 
     }
   } else {
-    RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "Else 2");
     openWelcomeDialog();
   }
 }

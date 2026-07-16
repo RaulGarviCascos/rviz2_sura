@@ -44,7 +44,7 @@ private:
 
   QWidget * sensors_tab_;
   QWidget * graphics_tab_;
-  QWidget * Thrusters_tab_;
+  QWidget * thrusters_tab_;
   QWidget * settings_tab_;
   QWidget * rviz_3d_tab_;
 };

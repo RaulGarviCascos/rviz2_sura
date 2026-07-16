@@ -86,6 +86,7 @@
 #include "rviz_common/visualization_manager.hpp"
 #include "./widget_geometry_change_detector.hpp"
 
+
 // #include "./displays_panel.hpp"
 #include "./help_panel.hpp"
 // #include "./interaction/selection_manager.hpp"
@@ -646,29 +647,30 @@ void VisualizationFrame::openNewPanelDialog()
   }
 }
 
-void VisualizationFrame::setRobotName(QString robot_name){
+void VisualizationFrame::setRobotConfig(const RobotConfig &r_config){
   if (manager_) {
-    manager_->setRobotName(robot_name);
+    manager_->setRobotConfig(r_config);
   }
 }
 void VisualizationFrame::openWelcomeDialog()
 {
   rviz_common::WelcomeDialog dialog(this, this->getManager());
-  QString robot_name;
+  RobotConfig r_config;
+
   if (dialog.exec() == QDialog::Accepted) {
-    robot_name = dialog.getRobotName(true);
+    r_config = dialog.getRobotConfig(true);
   }else {
-    robot_name = dialog.getRobotName(false);
+    r_config = dialog.getRobotConfig(false);
   }
-  if (robot_name.isEmpty()) {
-    robot_name = "RobotNameDefault";
-  }
-  if(robot_name!=manager_->getRobotName()){
-    setDisplayConfigModified();
-    setRobotName(robot_name);
+
+  if (r_config.robot_name.isEmpty()) {
+    r_config.robot_name = "RobotNameDefault";
   }
   
+  setDisplayConfigModified();
+  setRobotConfig(r_config);
 }
+
 void VisualizationFrame::onTabChanged(int index)
 {
   QList<QDockWidget*> dock_panels = findChildren<QDockWidget*>();
@@ -941,7 +943,7 @@ void VisualizationFrame::save(Config config)
   manager_->save(config.mapMakeChild("Visualization Manager"));
   savePanels(config.mapMakeChild("Panels"));
   saveWindowGeometry(config.mapMakeChild("Window Geometry"));
-  saveRobotName(config);
+  saveRobotConfig(config.mapMakeChild("RobotConfig"));
 }
 
 void VisualizationFrame::load(const Config & config)
@@ -949,19 +951,22 @@ void VisualizationFrame::load(const Config & config)
   manager_->load(config.mapGetChild("Visualization Manager"));
   loadPanels(config.mapGetChild("Panels"));
   loadWindowGeometry(config.mapGetChild("Window Geometry"));
-  loadRobotName(config.mapGetChild("RobotNameForProject"));
+  loadRobotConfig(config.mapGetChild("RobotConfig"));
 }
 
-void VisualizationFrame::loadRobotName(const Config & robot_name_config)
+void VisualizationFrame::loadRobotConfig(const Config & robot_config)
 {
-  if (robot_name_config.isValid()) {
-    QString robot_name = "";
-    if (robot_name_config.getType() == Config::Value) {
-      robot_name = robot_name_config.getValue().toString();
-      RCLCPP_INFO(rclcpp::get_logger("rviz2"), "The current robot name is: %s", robot_name.toStdString().c_str());
-    }
-    if (!robot_name.isEmpty()) {
-      manager_->setRobotName(robot_name); 
+  RobotConfig r_config;
+  if (robot_config.isValid()) {
+    r_config.load(robot_config);
+      if( !r_config.password.isEmpty() &&!r_config.ip.isEmpty() &&!r_config.robot_name.isEmpty() &&!r_config.file_path.isEmpty()){
+        if(r_config.user.isEmpty()){
+          r_config.user=tr("%1_navigatior").arg(r_config.robot_name);
+        }
+        if(manager_){
+        manager_->setRobotConfig(r_config);
+      } 
+    
     } else {
       openWelcomeDialog(); 
     }
@@ -1012,12 +1017,27 @@ void VisualizationFrame::loadWindowGeometry(const Config & config)
   hide_right_dock_button_->setChecked(b);
 }
 
-void VisualizationFrame::saveRobotName(Config config)
+void VisualizationFrame::saveRobotConfig(Config config)
 {
   if (manager_) {
-    config.mapSetValue("RobotNameForProject", manager_->getRobotName());
+    RobotConfig r_config = manager_->getRobotConfig();
+    r_config.save(config);
   }
 }
+void VisualizationFrame::saveNewRobotConfig(const RobotConfig &r_config)
+{
+  // 1. Actualizamos la configuración del robot en memoria RAM
+  setRobotConfig(r_config);
+
+  // 2. Si no hay ningún archivo cargado (está vacío), no hacemos nada
+  if (display_config_file_.empty()) {
+    return;
+  }
+
+  // 3. Guardamos usando el método nativo que acabas de encontrar
+  saveDisplayConfig(QString::fromStdString(display_config_file_));
+}
+
 
 void VisualizationFrame::saveWindowGeometry(Config config)
 {

@@ -1,8 +1,8 @@
-#ifndef ThrusterS_PANEL_HPP
-#define ThrusterS_PANEL_HPP
+#ifndef Thrusters_PANEL_HPP
+#define Thrusters_PANEL_HPP
 
 #include <QWidget>
-#include "thruster.hpp" 
+#include "../components/thruster.hpp"
 #include "std_msgs/msg/float64_multi_array.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "controller_manager_msgs/srv/switch_controller.hpp"

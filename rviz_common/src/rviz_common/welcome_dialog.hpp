@@ -7,6 +7,8 @@
 #include <QDialogButtonBox>
 #include <QLineEdit>
 #include <QPixmap>
+#include "sura/components/robot_config.hpp"
+
 namespace rviz_common
 {
 class VisualizationManager;
@@ -16,14 +18,21 @@ class WelcomeDialog : public QDialog
 
 public:
   explicit WelcomeDialog(QWidget * parent = nullptr, VisualizationManager * manager = nullptr);
-  QString getRobotName(bool accepted) const;
+  RobotConfig getRobotConfig(bool accepted) const;
 private:
-  QLabel * welcome_label_;
+  QLabel * lbl_robot_name_;
   QDialogButtonBox * button_box_;
   QVBoxLayout * layout_;
-  QLineEdit * text_input_;
+  QLineEdit * robot_name_input_;
+  QLineEdit * user_name_input_;
+  QLineEdit * robot_ip_input_;
+  QLineEdit * user_pass_input_;
   VisualizationManager * manager_;
   QString  robot_name_;
+  QString  user_name_;
+  QString  robot_ip_;
+  QString  user_pass_;
+
 };
 
 }  

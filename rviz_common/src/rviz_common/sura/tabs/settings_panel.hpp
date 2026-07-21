@@ -37,6 +37,8 @@ private:
   void onGetFileClicked();
   QLabel *title_label_;
   QString local_output_path_;
+  QIcon *closed_eye_icon;
+  QIcon *opened_eye_icon;
 
 // protected:
 //   void resizeEvent(QResizeEvent *event) override;

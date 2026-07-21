@@ -210,37 +210,30 @@ void SuraBF::detachTab(int index)
 {
   if (index < 0) return;
 
-  // 1. Guardamos el título y el widget interno
   QString title = tab_widget_->tabText(index);
   QWidget *content_widget = tab_widget_->widget(index);
 
-  // Evitamos quitar la pestaña si por algún motivo no tiene contenido
   if (!content_widget) return;
 
-  // 2. Creamos una ventana flotante independiente
   QDialog *float_window = new QDialog(frame_);
   float_window->setWindowTitle(tr("%1 (Flotante)").arg(title));
-  float_window->setAttribute(Qt::WA_DeleteOnClose); // Libera memoria al cerrar
+  float_window->setAttribute(Qt::WA_DeleteOnClose); 
   float_window->resize(content_widget->sizeHint().expandedTo(QSize(600, 400)));
 
   QVBoxLayout *layout = new QVBoxLayout(float_window);
   layout->setContentsMargins(5, 5, 5, 5);
   
-  // 3. Quitamos el widget del QTabWidget y lo metemos en la ventana flotante
   tab_widget_->removeTab(index);
   layout->addWidget(content_widget);
   content_widget->show();
 
-  // 4. AL CERRAR LA VENTANA: Devolvemos la pestaña automáticamente al QTabWidget
   connect(float_window, &QDialog::destroyed, this, [this, content_widget, title, index]() {
     if (tab_widget_ && content_widget) {
-      // Reinsertamos la pestaña en la posición original (o al final si cambió el índice)
       int target_index = (index <= tab_widget_->count()) ? index : tab_widget_->count();
       tab_widget_->insertTab(target_index, content_widget, title);
       tab_widget_->setCurrentIndex(target_index);
     }
   });
 
-  // Mostramos la ventana flotante
   float_window->show();
 }

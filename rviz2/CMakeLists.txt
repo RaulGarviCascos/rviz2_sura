@@ -18,6 +18,8 @@ find_package(rviz_common REQUIRED)
 find_package(rviz_ogre_vendor REQUIRED)
 
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
+
+find_package(sura_msgs REQUIRED)
 # TODO(wjwwood): this block is to setup the windeployqt tool, could be removed later.
 if(Qt5_FOUND AND WIN32 AND TARGET Qt5::qmake AND NOT TARGET Qt5::windeployqt)
   get_target_property(_qt5_qmake_location Qt5::qmake IMPORTED_LOCATION)

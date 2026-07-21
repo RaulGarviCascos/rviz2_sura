@@ -16,7 +16,9 @@ class ThrustersPanel : public QWidget
   Q_OBJECT
 
 public:
-  static constexpr size_t NUM_ThrusterS = 8;
+  Thruster* addThruster(const QString &name);
+  Thruster* getThruster(const QString &name) const;
+
 explicit ThrustersPanel(rviz_common::VisualizationManager *manager, QWidget *parent = nullptr);
 ~ThrustersPanel() override = default;
 
@@ -26,7 +28,6 @@ private slots:
 
 private:
   rviz_common::VisualizationManager * manager_;
-  Thruster* Thrusters[NUM_ThrusterS];
   rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr thruster_pub_;
   rclcpp::Client<controller_manager_msgs::srv::SwitchController>::SharedPtr switch_controller_client_;
   SuraButton *btn_save_;
@@ -35,8 +36,12 @@ private:
   void updateArmed(); 
   QTimer *panel_timer_;  
   QGridLayout *thrusters_grid_;
+  QWidget *scroll_widget_;
   QScrollArea *scroll_area_;
   int current_columns_ = 4; 
+  int current_calculated_columns_ = -1;      
+  QList<Thruster*> thruster_list_;
+  QMap<QString, Thruster*> thruster_map_;
 
 protected:
   void resizeEvent(QResizeEvent *event) override;

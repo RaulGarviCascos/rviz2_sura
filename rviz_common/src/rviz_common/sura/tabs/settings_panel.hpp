@@ -18,6 +18,8 @@ public:
 explicit SettingsPanel(rviz_common::VisualizationFrame *frame_, QWidget *parent = nullptr);
 ~SettingsPanel() override = default;
 
+signals:
+  void xacroUpdated();
 
 private:
   rviz_common::VisualizationFrame * frame_;
@@ -34,6 +36,7 @@ private:
   void onSelectWorkspace();
   void onGetFileClicked();
   QLabel *title_label_;
+  QString local_output_path_;
 
 // protected:
 //   void resizeEvent(QResizeEvent *event) override;

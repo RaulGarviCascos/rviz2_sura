@@ -49,6 +49,7 @@ find_package(yaml_cpp_vendor REQUIRED)
 find_package(controller_manager_msgs REQUIRED)
 
 find_package(TinyXML2 REQUIRED)  # provided by tinyxml_vendor
+find_package(sura_msgs REQUIRED)
 
 # Copy env_config.hpp so that env_config.cpp can find it
 # TODO(jsquare): Get rid of copy hpp file
@@ -134,6 +135,9 @@ set(rviz_common_headers_to_moc
   src/rviz_common/sura/tabs/settings_panel.hpp
   src/rviz_common/sura/components/thruster.hpp
   src/rviz_common/sura/components/sura_button.hpp
+  src/rviz_common/sura/components/sensor.hpp
+  src/rviz_common/sura/tabs/sensor_panel.hpp
+  src/rviz_common/sura/components/sura_urdf_parser.hpp
 )
 
 foreach(header "${rviz_common_headers_to_moc}")
@@ -239,6 +243,9 @@ add_library(rviz_common SHARED
   src/rviz_common/sura/tabs/settings_panel.cpp
   src/rviz_common/sura/components/thruster.cpp
   src/rviz_common/sura/components/sura_button.cpp
+  src/rviz_common/sura/components/sensor.cpp
+  src/rviz_common/sura/tabs/sensor_panel.cpp
+  src/rviz_common/sura/components/sura_urdf_parser.cpp
 )
 
 target_include_directories(rviz_common
@@ -271,6 +278,7 @@ ament_target_dependencies(rviz_common
   urdf
   yaml_cpp_vendor
   controller_manager_msgs
+  sura_msgs
 )
 # Causes the visibility macros to use dllexport rather than dllimport,
 # which is appropriate when building the dll but not consuming it.

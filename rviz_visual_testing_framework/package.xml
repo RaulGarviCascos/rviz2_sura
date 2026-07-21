@@ -26,6 +26,7 @@
   <depend>rcutils</depend>
   <depend>rviz_common</depend>
   <depend>ament_cmake_gtest</depend>
+  <depend>sura_msgs</depend>
 
   <!-- TODO(jacobperron): Replace with ament_lint_common when ament_copyright is working -->
   <test_depend>ament_cmake_cppcheck</test_depend>

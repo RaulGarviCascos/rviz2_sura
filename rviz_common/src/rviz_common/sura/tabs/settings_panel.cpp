@@ -250,41 +250,53 @@ void SettingsPanel::onGetFileClicked(){
   QString string_robot_name = input_name_->text();
   QString string_pass = input_pass_->text();
   QString string_user_name = user_name_->text();
-  QString string_description_file = description_file_->text();
-  
+  QString file_name = tr("%1.urdf.xacro").arg(string_robot_name);
+  QString string_description_file = (description_file_->text().contains(file_name))?description_file_->text():tr("%1/%2.urdf.xacro").arg(description_file_->text(),string_robot_name);
+  RCLCPP_INFO(rclcpp::get_logger("rviz2"), "Trying to get the file: %s", string_description_file.toStdString().c_str());
   if (!string_ip_robot.isEmpty() && !string_robot_name.isEmpty() && 
       !string_pass.isEmpty() && !string_user_name.isEmpty() && !string_description_file.isEmpty()) {
     
-    QString local_output_path = QFileDialog::getSaveFileName(
-      this,
-      tr("Save Description File As..."),
-      QDir::homePath() + "Documentos/cirtesu/xacros/", 
-      tr("All Files (*)")
-    );
+    QString target_dir = QDir::homePath() + "/.cirtesu/xacros";
 
-    if (local_output_path.isEmpty()) {
+    // 2. Creamos la estructura de carpetas si no existe
+    QDir dir;
+    if (!dir.mkpath(target_dir)) {
+      RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "Could not create directory path: %s", target_dir.toStdString().c_str());
+      QMessageBox::critical(
+        this, 
+        tr("Directory Error"), 
+        tr("Failed to create folder path on:\n%1").arg(target_dir)
+      );
       return;
     }
 
+    local_output_path_ = target_dir + "/" + string_robot_name + ".urdf.xacro";
+    if (local_output_path_.isEmpty()) {
+      return;
+    }
+    frame_->setLocalPathXacro(local_output_path_);
+    QString path_to_save = local_output_path_;
     QProcess *ftp_process = new QProcess(this);
     QStringList arguments;
     arguments << "--connect-timeout" << "10" 
+              << "-k"
               << "-u" << QString("%1:%2").arg(string_user_name, string_pass)
-              << QString("ftp://%1/%2").arg(string_ip_robot, string_description_file)
-              << "-o" << local_output_path;
+              << QString("sftp://%1/%2").arg(string_ip_robot, string_description_file)
+              << "-o" << local_output_path_;
 
     
     connect(ftp_process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this, [this, ftp_process, local_output_path](int exitCode, QProcess::ExitStatus exitStatus) {
+            this, [this, ftp_process, path_to_save](int exitCode, QProcess::ExitStatus exitStatus) {
         
         if (exitCode == 0 && exitStatus == QProcess::NormalExit) {
           // ¡Éxito total!
-          RCLCPP_INFO(rclcpp::get_logger("rviz2"), "FTP Download finished successfully: %s", local_output_path.toStdString().c_str());
+          RCLCPP_INFO(rclcpp::get_logger("rviz2"), "FTP Download finished successfully: %s", path_to_save.toStdString().c_str());
           QMessageBox::information(
             this, 
             tr("Download Successful"), 
-            tr("The description file has been downloaded successfully to:\n%1").arg(local_output_path)
+            tr("The description file has been downloaded successfully to:\n%1").arg(path_to_save)
           );
+          emit xacroUpdated();
         } else {
           QString error_output = ftp_process->readAllStandardError();
           RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "FTP Download failed: %s", error_output.toStdString().c_str());
@@ -298,10 +310,10 @@ void SettingsPanel::onGetFileClicked(){
         ftp_process->deleteLater();
     });
     ftp_process->start("curl", arguments);
+    
     return;
 
   } else {
-    // 🎯 Warning dialog actualizado con todos los campos obligatorios
     QMessageBox::warning(
       this, 
       tr("Missing Fields"), 

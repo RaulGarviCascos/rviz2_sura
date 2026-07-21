@@ -7,7 +7,7 @@
 #include <QLineEdit>
 #include "../components/sura_button.hpp"
 #include <QLabel>
-
+#include <QIcon>
 namespace rviz_common { class VisualizationFrame; }
 
 class SettingsPanel : public QWidget

@@ -28,6 +28,8 @@ find_package(rcutils REQUIRED)
 
 find_package(rviz_common REQUIRED)
 
+find_package(sura_msgs REQUIRED)
+
 find_package(rviz_ogre_vendor REQUIRED)
 
 find_package(Qt5 REQUIRED COMPONENTS Widgets Test)

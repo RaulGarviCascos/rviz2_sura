@@ -76,6 +76,7 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(urdf REQUIRED)
 find_package(visualization_msgs REQUIRED)
+find_package(sura_msgs REQUIRED)
 
 set(rviz_default_plugins_headers_to_moc
   include/rviz_default_plugins/displays/accel/accel_display.hpp

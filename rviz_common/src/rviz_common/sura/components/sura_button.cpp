@@ -15,48 +15,42 @@ void SuraButton::setRole(Role role)
 
 void SuraButton::updateStyle()
 {
-  QString normal_color;
-  QString hover_color;
-  QString pressed_color;
-  QString color;
-  QStyle::StandardPixmap icon_pixmap = QStyle::SP_CustomBase;
+  QString normal_color, hover_color, pressed_color, color;
+  QIcon button_icon;
 
   switch (current_role_) {
     case Role::Success: 
       normal_color  = "#2ecc71"; hover_color   = "#27ae60"; pressed_color = "#1e8449";
-      icon_pixmap   = QStyle::SP_DialogSaveButton;
+      button_icon = style()->standardIcon(QStyle::SP_DialogSaveButton);
       color = "white";
       break;
 
     case Role::Warning: 
       normal_color  = "#e67e22"; hover_color   = "#d35400"; pressed_color = "#b04a00";
-      icon_pixmap   = QStyle::SP_MessageBoxWarning;
+      button_icon = style()->standardIcon(QStyle::SP_MessageBoxWarning);
       color = "white";
       break;
 
     case Role::Danger:  
       normal_color  = "#e74c3c"; hover_color   = "#c0392b"; pressed_color = "#962d22";
-      icon_pixmap   = QStyle::SP_DialogCancelButton;
+      button_icon = style()->standardIcon(QStyle::SP_DialogCancelButton);
       color = "white";
       break;
     case Role::Run:  
       normal_color  = "#2cddc5"; hover_color   = "#22af9c"; pressed_color = "#167064";
-      icon_pixmap   = QStyle::SP_MediaPlay;
+      button_icon = style()->standardIcon(QStyle::SP_MediaPlay);
       color = "black";
       break;
 
     case Role::Default: 
     default:
       normal_color  = "#3498db"; hover_color   = "#2980b9"; pressed_color = "#1c638e";
-      icon_pixmap   = QStyle::SP_ArrowRight;
+      button_icon = QIcon();
       color = "white";
       break;
   }
 
-  // Asignamos el icono nativo correspondiente
-  if (icon_pixmap != QStyle::SP_CustomBase) {
-    setIcon(style()->standardIcon(icon_pixmap));
-  }
+  setIcon(button_icon);
 
   // Aplicamos la hoja de estilo usando las variables de color inyectadas
   setStyleSheet(

@@ -43,10 +43,14 @@ void SuraUrdfParser::parseRos2Control(QXmlStreamReader &xml)
       if (xml.name().toString() == "sensor") {
         parseSensor(xml);
       }
+      else if (xml.name().toString() == "joint") {
+        QString joint_name = xml.attributes().value("name").toString();
+        if (joint_name.contains("Thruster", Qt::CaseInsensitive)) {
+          parseThruster(xml);
+        }
+      }
     }
-    if (xml.name().toString() == "joint") {
-      parseThruster(xml);
-    }
+   
   }
 }
 
@@ -55,7 +59,7 @@ void SuraUrdfParser::parseSensor(QXmlStreamReader &xml)
 {
   SuraSensorInfo sensor;
   sensor.name = xml.attributes().value("name").toString();
-
+  int broadcasters_count = 0;
   // Seguimos leyendo hasta encontrar el cierre </sensor>
   while (!xml.atEnd() && !(xml.tokenType() == QXmlStreamReader::EndElement && xml.name().toString() == "sensor")) {
     QXmlStreamReader::TokenType token = xml.readNext();
@@ -65,10 +69,16 @@ void SuraUrdfParser::parseSensor(QXmlStreamReader &xml)
       
       if (tag_name == "param") {
         QString param_name = xml.attributes().value("name").toString();
-        // readElementText() consume el texto interno y avanza hasta el EndElement </param>
         QString param_value = xml.readElementText(); 
+
+        // Si el parámetro se llama "broadcaster", le asignamos un índice incremental
+        if (param_name == "broadcaster") {
+          param_name = QString("broadcaster%1").arg(broadcasters_count);
+          broadcasters_count++;
+        }
+
         sensor.params.insert(param_name, param_value);
-      } 
+      }
       else if (tag_name == "state_interface") {
         QString interface_name = xml.attributes().value("name").toString();
         sensor.state_interfaces.append(interface_name);
@@ -90,7 +100,7 @@ void SuraUrdfParser::parseThruster(QXmlStreamReader &xml)
   QStringList parts = thruster.name.split('/');
 
   thruster.name = parts[1];
-  thruster.name.remove("Thruster_");
+  // thruster.name.remove("Thruster_");
   // Seguimos leyendo hasta encontrar el cierre </joint>
   while (!xml.atEnd() && !(xml.tokenType() == QXmlStreamReader::EndElement && xml.name().toString() == "joint")) {
     QXmlStreamReader::TokenType token = xml.readNext();

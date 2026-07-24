@@ -170,7 +170,7 @@ public:
    * a display config.
    */
   void
- loadPersistentSettings();
+  loadPersistentSettings();
   /// Save the "general", persistent settings to a file.
   /**
    * This config file has a few things which should not be saved within
@@ -240,6 +240,10 @@ public:
     ///save the new robot config from other class.
     void 
     saveNewRobotConfig(const RobotConfig &r_config);
+
+    void setLocalPathXacro(QString path){local_path_xacro_ = path;};
+    
+    QString getLocalPathXacro(){return local_path_xacro_;};
 
 public Q_SLOTS:
   /// Notification that something would change in the display config if saved.
@@ -583,6 +587,7 @@ protected:
   QStringList toolbars_visibles_guardadas_;
   SuraBF * sura_block_;
   bool last_tab_was_rviz_ = false;
+  QString local_path_xacro_;
 };
 
 }  // namespace rviz_common

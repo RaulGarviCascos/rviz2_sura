@@ -85,7 +85,7 @@ QWidget * SuraBF::createSensorsWidget()
   auto ros_node = manager_->getRosNodeAbstraction().lock()->get_raw_node();
   if(correct_file_){
     for (const SuraSensorInfo &sensor_info : sensors_) {
-      Sensor * ui_card = sensor_panel->addSensor(sensor_info.name);
+      Sensor * ui_card = sensor_panel->addSensor(sensor_info);
       for (const QString &state_name : sensor_info.state_interfaces) {
         if (state_name.contains("sample_time")) continue;
         ui_card->addInfoField(state_name, "0.0");
@@ -98,7 +98,10 @@ QWidget * SuraBF::createSensorsWidget()
       );
     }
   } else  {
-    Sensor * fallback = sensor_panel->addSensor("DVL (Fallback)");
+    SuraSensorInfo new_info;
+    new_info.name = "DVL (Fallback)";
+
+    Sensor * fallback = sensor_panel->addSensor(new_info);
     fallback->addInfoField("Vel X", "0.0");
     fallback->addInfoField("Vel Y", "0.0");
 

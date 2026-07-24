@@ -4,6 +4,7 @@
 Sensor::Sensor(const QString &sensor_name, QWidget *parent)
   : QWidget(parent), is_enabled_(false)
 {
+  sensor_name_=sensor_name;
   // Layout principal del Widget
   QVBoxLayout *main_layout = new QVBoxLayout(this);
   main_layout->setContentsMargins(0, 0, 0, 0);
@@ -68,15 +69,43 @@ Sensor::Sensor(const QString &sensor_name, QWidget *parent)
   card_layout->addWidget(info_container_, 1); 
 
   // --- BOTÓN DE ACCIÓN ---
+
+
+  main_layout->addWidget(card_frame_);
+  setLayout(main_layout);
+
+  // --- ZONA INFERIOR: BOTÓN DE ACCIÓN + SPINNER ---
+  QHBoxLayout *button_layout = new QHBoxLayout();
+  button_layout->setContentsMargins(0, 0, 0, 0);
+
   toggle_button_ = new SuraButton(SuraButton::Role::Default, tr("ON"), this);
   toggle_button_->setCheckable(true);
   updateButtonStyle();
   
-  connect(toggle_button_, &QPushButton::clicked, this, &Sensor::onButtonClicked);
-  card_layout->addWidget(toggle_button_);
+  // Spinner / Circulito de carga
+  spinner_ = new QProgressBar(this);
+  spinner_->setRange(0, 0); // 💡 Rango (0,0) en Qt crea el modo indeterminado (animación continua)
+  spinner_->setTextVisible(false);
+  spinner_->setFixedHeight(6); // Fino y discreto
+  spinner_->setStyleSheet(
+    "QProgressBar {"
+    "  border: none;"
+    "  background-color: #f1f2f6;"
+    "  border-radius: 3px;"
+    "}"
+    "QProgressBar::chunk {"
+    "  background-color: #3498db;" // Azul de carga
+    "  border-radius: 3px;"
+    "}"
+  );
+  spinner_->hide(); // Oculto por defecto
 
-  main_layout->addWidget(card_frame_);
-  setLayout(main_layout);
+  button_layout->addWidget(toggle_button_, 1);
+  
+  card_layout->addLayout(button_layout);
+  card_layout->addWidget(spinner_); // Se coloca debajo del botón
+
+  connect(toggle_button_, &SuraButton::clicked, this, &Sensor::onButtonClicked);
 }
 void Sensor::addInfoField(const QString &key, const QString &initial_value)
 {
@@ -125,6 +154,7 @@ void Sensor::addInfoField(const QString &key, const QString &initial_value)
   info_layout_->insertWidget(insert_index, row_frame);
 
   fields_map_.insert(key, label_value); 
+
 }
 
 void Sensor::updateInfoField(const QString &key, const QString &value)
@@ -143,13 +173,34 @@ bool Sensor::isSensorEnabled() const
 {
   return is_enabled_;
 }
+void Sensor::setLoading(bool loading)
+{
+  is_loading_ = loading;
+  if (loading) {
+    toggle_button_->setEnabled(false); // Deshabilita clics
+    toggle_button_->setText(tr("Processing..."));
+    spinner_->show();
+  } else {
+    toggle_button_->setEnabled(true);  // Reactiva clics
+    spinner_->hide();
+    updateButtonStyle();               // Restaura texto ON / OFF
+  }
+}
 
 void Sensor::onButtonClicked()
 {
-  is_enabled_ = toggle_button_->isChecked();
+  // Al hacer clic, activamos el estado de carga y bloqueamos interacciones repetidas
+  setLoading(true);
+  emit sensorToggled(!is_enabled_);
+}
+
+void Sensor::setActive(bool active)
+{
+  // Cuando ROS 2 responde y confirma el estado real, quitamos el spinner
+  setLoading(false);
+  setLedActive(active);
+  is_enabled_ = active;
   updateButtonStyle();
-  updateLedStyle(is_enabled_); 
-  emit sensorToggled(is_enabled_);
 }
 
 void Sensor::updateLedStyle(bool active)
@@ -329,3 +380,4 @@ void Sensor::setupRos(rclcpp::Node::SharedPtr node, const QString &robot_name, c
                 msg_type.toStdString().c_str(), sensor_name.toStdString().c_str());
   }
 }
+

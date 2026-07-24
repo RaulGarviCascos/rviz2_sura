@@ -20,6 +20,7 @@
 #include "sura_msgs/msg/leak_sensor.hpp"
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include <QProgressBar>
 
 class Sensor : public QWidget
 {
@@ -43,6 +44,11 @@ public:
 
   void setupRos(rclcpp::Node::SharedPtr node, const QString &robot_name, const QString &sensor_name, const QString &msg_type);
 
+  QString getSensorName(){return sensor_name_;};
+
+  void setActive(bool active);
+  void setLoading(bool loading);
+
 signals:
   // Se emite cuando el usuario pulsa el botón de encender/apagar
   void sensorToggled(bool enabled);
@@ -52,6 +58,7 @@ private slots:
 
 private:
   bool is_enabled_;
+  QString sensor_name_;
   
   // Elementos UI
   QFrame *card_frame_;
@@ -70,4 +77,6 @@ private:
   void updateLedStyle(bool active);
   void updateButtonStyle();
   rclcpp::SubscriptionBase::SharedPtr ros_sub_;
+  QProgressBar *spinner_{nullptr};
+  bool is_loading_{false};
 };

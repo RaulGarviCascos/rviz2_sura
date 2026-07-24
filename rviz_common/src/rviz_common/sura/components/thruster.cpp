@@ -11,6 +11,8 @@ const double SCALE = 100.0;
 Thruster::Thruster(const QString &name, QWidget *parent)
   : QWidget(parent)
 {
+  QString thurtle_name = name;
+  thurtle_name.replace('_', ' ');
   // Layout principal del Widget (Ajustado a márgenes 0 para que no meta espacio extra fuera de la tarjeta)
   QVBoxLayout *main_layout = new QVBoxLayout(this);
   main_layout->setContentsMargins(0, 0, 0, 0);
@@ -40,13 +42,14 @@ Thruster::Thruster(const QString &name, QWidget *parent)
   status_led_->setFixedSize(12, 12);
 
   // Nombre del motor
-  QLabel *title = new QLabel(name, card_frame);
-  title->setWordWrap(true);
+  QLabel *title = new QLabel(thurtle_name, card_frame);
+  
   QFont name_font = title->font();
   name_font.setBold(true);
   name_font.setPointSize(11);
   title->setFont(name_font);
   title->setStyleSheet("color: #2f3640;");
+  title->setWordWrap(true);
 
   header_layout->addWidget(status_led_);
   header_layout->addWidget(title);

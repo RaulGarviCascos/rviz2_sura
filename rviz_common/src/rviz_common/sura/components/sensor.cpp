@@ -68,9 +68,6 @@ Sensor::Sensor(const QString &sensor_name, QWidget *parent)
   
   card_layout->addWidget(info_container_, 1); 
 
-  // --- BOTÓN DE ACCIÓN ---
-
-
   main_layout->addWidget(card_frame_);
   setLayout(main_layout);
 
@@ -135,6 +132,8 @@ void Sensor::addInfoField(const QString &key, const QString &initial_value)
     "background: transparent;"
   );
   label_key->setWordWrap(true); 
+
+
 
   // Valor del campo
   QLabel *label_value = new QLabel(initial_value, row_frame);

@@ -1,7 +1,6 @@
 #include "rviz_common/sura/sura_bf.hpp"
 #include "rviz_common/visualization_frame.hpp"
 #include "rviz_common/visualization_manager.hpp"
-#include "rclcpp/rclcpp.hpp"
 #include "tabs/thrusters_panel.hpp"
 #include "tabs/settings_panel.hpp"
 #include "tabs/sensor_panel.hpp"
@@ -18,6 +17,7 @@ SuraBF::SuraBF(rviz_common::VisualizationFrame * frame,  QObject * parent)
   tab_widget_(nullptr),
   sensors_tab_(nullptr),
   graphics_tab_(nullptr),
+  actuators_tab_(nullptr),
   thrusters_tab_(nullptr),
   settings_tab_(nullptr),
   rviz_3d_tab_(nullptr),
@@ -35,6 +35,13 @@ SuraBF::~SuraBF()
 void SuraBF::initSuraUi(QWidget * rviz_render_panel)
 {
   if (tab_widget_) return;
+  auto node_abs = manager_->getRosNodeAbstraction().lock();
+  if (node_abs) {
+    ros_node_ = node_abs->get_raw_node();
+  } else {
+    RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "No se pudo obtener el nodo de ROS 2 desde RViz.");
+    return;
+  }
   r_config_ = manager_->getRobotConfig();
 
   tab_widget_ = new QTabWidget(frame_);
@@ -52,6 +59,7 @@ void SuraBF::initSuraUi(QWidget * rviz_render_panel)
 
   sensors_tab_ = createSensorsWidget();
   graphics_tab_ = createGraphicsWidget();
+  actuators_tab_ = createActuatorsWidget();
   thrusters_tab_ = createThrustersWidget();
   settings_tab_ = createSettingsWidget();
   rviz_3d_tab_ = createRviz3DWidget(rviz_render_panel);
@@ -62,9 +70,11 @@ void SuraBF::initSuraUi(QWidget * rviz_render_panel)
 
   tab_widget_->addTab(sensors_tab_, tr("Sensors"));
   tab_widget_->addTab(graphics_tab_, tr("Graphics"));
+  tab_widget_->addTab(actuators_tab_, tr("Actuators"));
   tab_widget_->addTab(thrusters_tab_, tr("Thursters"));
-  tab_widget_->addTab(settings_tab_, tr("Settings"));
   tab_widget_->addTab(rviz_3d_tab_, tr("3D View"));
+  tab_widget_->addTab(settings_tab_, tr("Settings"));
+
   connect(tab_widget_, &QTabWidget::currentChanged, this, [this](int index) {
     emit tabChanged(index);
   });
@@ -82,7 +92,6 @@ void SuraBF::setVisible(bool visible)
 QWidget * SuraBF::createSensorsWidget()
 {
   SensorPanel * sensor_panel = new SensorPanel(frame_->getManager(),tab_widget_);
-  auto ros_node = manager_->getRosNodeAbstraction().lock()->get_raw_node();
   if(correct_file_){
     for (const SuraSensorInfo &sensor_info : sensors_) {
       Sensor * ui_card = sensor_panel->addSensor(sensor_info);
@@ -91,7 +100,7 @@ QWidget * SuraBF::createSensorsWidget()
         ui_card->addInfoField(state_name, "0.0");
       }
       ui_card->setupRos(
-        ros_node,
+        ros_node_,
         r_config_.robot_name,
         sensor_info.name,
         sensor_info.params["msg_type"]
@@ -125,6 +134,20 @@ QWidget * SuraBF::createGraphicsWidget()
   QVBoxLayout * layout = new QVBoxLayout(widget);
 
   QLabel * label = new QLabel(tr("Gráficas"), widget);
+  label->setAlignment(Qt::AlignCenter);
+
+  layout->addWidget(label);
+  widget->setLayout(layout);
+  return widget;
+}
+
+
+QWidget * SuraBF::createActuatorsWidget()
+{
+  QWidget * widget = new QWidget(tab_widget_);
+  QVBoxLayout * layout = new QVBoxLayout(widget);
+
+  QLabel * label = new QLabel(tr("Actuadores"), widget);
   label->setAlignment(Qt::AlignCenter);
 
   layout->addWidget(label);

@@ -12,7 +12,9 @@
 #include "../../rviz_common/src/rviz_common/sura/components/sura_thrusters_info.hpp"
 #include "../../rviz_common/src/rviz_common/sura/components/robot_config.hpp"
 #include "rclcpp/rclcpp.hpp"
-
+#include <controller_manager_msgs/srv/list_controllers.hpp>
+#include "../../rviz_common/src/rviz_common/sura/components/sura_controller_info.hpp"
+#include <rcl_interfaces/srv/get_parameters.hpp>
 
 namespace rviz_common {
 class VisualizationFrame;
@@ -45,10 +47,12 @@ public Q_SLOTS:
 private:
   QWidget * createSensorsWidget();
   QWidget * createGraphicsWidget();
-  QWidget * createActuatorsWidget();
+  QWidget * createControllersWidget();
   QWidget * createThrustersWidget();
   QWidget * createSettingsWidget();
   QWidget * createRviz3DWidget(QWidget * rviz_render_panel);
+  void fetchParametersForControllers();
+  void requestNodeParameters(const QString & node_name, int controller_index);
   void detachTab(int index);
   
   rviz_common::VisualizationFrame * frame_;
@@ -58,16 +62,18 @@ private:
 
   QWidget * sensors_tab_;
   QWidget * graphics_tab_;
-  QWidget * actuators_tab_;
+  QWidget * controllers_tab_;
   QWidget * thrusters_tab_;
   QWidget * settings_tab_;
   QWidget * rviz_3d_tab_;
   QString local_path_;
   QList<SuraSensorInfo> sensors_;
   QList<SuraThrusterInfo> thrusters_;
+  QList<ControllerInfo> controllers_;
   bool correct_file_;
   RobotConfig r_config_;
   rclcpp::Node::SharedPtr ros_node_;
+  rclcpp::Client<controller_manager_msgs::srv::ListControllers>::SharedPtr controller_client_;
 };
 
 #endif  // RVIZ_COMMON__SURA__SURA_BF_HPP_

@@ -138,6 +138,10 @@ set(rviz_common_headers_to_moc
   src/rviz_common/sura/components/sensor.hpp
   src/rviz_common/sura/tabs/sensor_panel.hpp
   src/rviz_common/sura/components/sura_urdf_parser.hpp
+  src/rviz_common/sura/components/controller_card_widget.hpp
+  src/rviz_common/sura/tabs/controllers_panel.hpp
+
+
 )
 
 foreach(header "${rviz_common_headers_to_moc}")
@@ -246,6 +250,8 @@ add_library(rviz_common SHARED
   src/rviz_common/sura/components/sensor.cpp
   src/rviz_common/sura/tabs/sensor_panel.cpp
   src/rviz_common/sura/components/sura_urdf_parser.cpp
+  src/rviz_common/sura/components/controller_card_widget.cpp
+  src/rviz_common/sura/tabs/controllers_panel.cpp
 )
 
 target_include_directories(rviz_common

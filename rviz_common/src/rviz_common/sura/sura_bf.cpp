@@ -4,6 +4,7 @@
 #include "tabs/thrusters_panel.hpp"
 #include "tabs/settings_panel.hpp"
 #include "tabs/sensor_panel.hpp"
+#include "tabs/controllers_panel.hpp" // <-- CABECERA AÑADIDA
 #include "components/sura_urdf_parser.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <filesystem>
@@ -11,13 +12,14 @@
 #include <QTabBar>
 #include <QDialog>
 
-SuraBF::SuraBF(rviz_common::VisualizationFrame * frame,  QObject * parent)
+
+SuraBF::SuraBF(rviz_common::VisualizationFrame * frame, QObject * parent)
 : QObject(parent),
   frame_(frame),
   tab_widget_(nullptr),
   sensors_tab_(nullptr),
   graphics_tab_(nullptr),
-  actuators_tab_(nullptr),
+  controllers_tab_(nullptr),
   thrusters_tab_(nullptr),
   settings_tab_(nullptr),
   rviz_3d_tab_(nullptr),
@@ -59,7 +61,7 @@ void SuraBF::initSuraUi(QWidget * rviz_render_panel)
 
   sensors_tab_ = createSensorsWidget();
   graphics_tab_ = createGraphicsWidget();
-  actuators_tab_ = createActuatorsWidget();
+  controllers_tab_ = createControllersWidget();
   thrusters_tab_ = createThrustersWidget();
   settings_tab_ = createSettingsWidget();
   rviz_3d_tab_ = createRviz3DWidget(rviz_render_panel);
@@ -70,7 +72,7 @@ void SuraBF::initSuraUi(QWidget * rviz_render_panel)
 
   tab_widget_->addTab(sensors_tab_, tr("Sensors"));
   tab_widget_->addTab(graphics_tab_, tr("Graphics"));
-  tab_widget_->addTab(actuators_tab_, tr("Actuators"));
+  tab_widget_->addTab(controllers_tab_, tr("Controllers"));
   tab_widget_->addTab(thrusters_tab_, tr("Thursters"));
   tab_widget_->addTab(rviz_3d_tab_, tr("3D View"));
   tab_widget_->addTab(settings_tab_, tr("Settings"));
@@ -91,7 +93,7 @@ void SuraBF::setVisible(bool visible)
 
 QWidget * SuraBF::createSensorsWidget()
 {
-  SensorPanel * sensor_panel = new SensorPanel(frame_->getManager(),tab_widget_);
+  SensorPanel * sensor_panel = new SensorPanel(frame_->getManager(), tab_widget_);
   if(correct_file_){
     for (const SuraSensorInfo &sensor_info : sensors_) {
       Sensor * ui_card = sensor_panel->addSensor(sensor_info);
@@ -106,7 +108,7 @@ QWidget * SuraBF::createSensorsWidget()
         sensor_info.params["msg_type"]
       );
     }
-  } else  {
+  } else {
     SuraSensorInfo new_info;
     new_info.name = "DVL (Fallback)";
 
@@ -141,18 +143,17 @@ QWidget * SuraBF::createGraphicsWidget()
   return widget;
 }
 
-
-QWidget * SuraBF::createActuatorsWidget()
+// =========================================================================
+// PANEL DE CONTROLADORES REDIRIGIDO A ControllersPanel
+// =========================================================================
+QWidget * SuraBF::createControllersWidget()
 {
-  QWidget * widget = new QWidget(tab_widget_);
-  QVBoxLayout * layout = new QVBoxLayout(widget);
-
-  QLabel * label = new QLabel(tr("Actuadores"), widget);
-  label->setAlignment(Qt::AlignCenter);
-
-  layout->addWidget(label);
-  widget->setLayout(layout);
-  return widget;
+  RCLCPP_INFO(ros_node_->get_logger(), "Cargando ControllersPanel...");
+  
+  // Instanciamos el nuevo panel intermedio compartiendo el VisualizationManager
+  ControllersPanel * controllers_panel = new ControllersPanel(frame_->getManager(), tab_widget_);
+  
+  return controllers_panel;
 }
 
 QWidget * SuraBF::createThrustersWidget()
@@ -232,6 +233,7 @@ void SuraBF::reloadXacro()
     tab_widget_->insertTab(index, sensors_tab_, tr("Sensors"));
   }
 }
+
 void SuraBF::detachTab(int index)
 {
   if (index < 0) return;

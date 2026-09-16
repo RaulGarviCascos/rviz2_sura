@@ -9,19 +9,19 @@ Sensor::Sensor(const QString &sensor_name, QWidget *parent)
   QVBoxLayout *main_layout = new QVBoxLayout(this);
   main_layout->setContentsMargins(0, 0, 0, 0);
 
-  // Contenedor tipo "Tarjeta" 
+  // Contenedor tipo "Tarjeta"
   card_frame_ = new QFrame(this);
   card_frame_->setFrameShape(QFrame::StyledPanel);
-  
+
   // 💡 CAMBIO CLAVE: Quitamos setFixedSize y permitimos tamaño dinámico
   card_frame_->setMinimumWidth(220);   // Ancho mínimo para que no se aplaste
   card_frame_->setMinimumHeight(180);  // Alto mínimo estético para sensores con pocos datos
-  
+
   card_frame_->setStyleSheet(
     "QFrame {"
     "  background-color: #ffffff;"
-    "  border: 1px solid #e1e8ed;" 
-    "  border-radius: 12px;"       
+    "  border: 1px solid #e1e8ed;"
+    "  border-radius: 12px;"
     "}"
   );
 
@@ -32,22 +32,22 @@ Sensor::Sensor(const QString &sensor_name, QWidget *parent)
   // --- CABECERA: LED + Nombre ---
   QHBoxLayout *header_layout = new QHBoxLayout();
   header_layout->setSpacing(8);
-  
+
   led_indicator_ = new QLabel(card_frame_);
   led_indicator_->setFixedSize(10, 10);
-  updateLedStyle(false); 
+  updateLedStyle(false);
 
   name_label_ = new QLabel(sensor_name, card_frame_);
   QFont name_font = name_label_->font();
   name_font.setBold(true);
-  name_font.setPointSize(12); 
+  name_font.setPointSize(12);
   name_label_->setFont(name_font);
   name_label_->setStyleSheet("border: none; color: #2c3e50;");
   name_label_->setWordWrap(true); // 💡 Si el nombre del sensor es largo, saltará de línea
 
   header_layout->addWidget(led_indicator_);
   header_layout->addWidget(name_label_);
-  header_layout->addStretch(); 
+  header_layout->addStretch();
   card_layout->addLayout(header_layout);
 
   // Línea divisoria
@@ -59,17 +59,14 @@ Sensor::Sensor(const QString &sensor_name, QWidget *parent)
   // --- ZONA DE INFO ESTILO TABLA ZEBRA ---
   info_container_ = new QWidget(card_frame_);
   info_container_->setStyleSheet("border: none; background: transparent;");
-  
+
   info_layout_ = new QVBoxLayout(info_container_);
   info_layout_->setContentsMargins(0, 4, 0, 4);
-  info_layout_->setSpacing(6); 
-  
+  info_layout_->setSpacing(6);
+
   info_layout_->addStretch(1); // Mantiene las filas agrupadas arriba
-  
-  card_layout->addWidget(info_container_, 1); 
 
-  // --- BOTÓN DE ACCIÓN ---
-
+  card_layout->addWidget(info_container_, 1);
 
   main_layout->addWidget(card_frame_);
   setLayout(main_layout);
@@ -81,7 +78,7 @@ Sensor::Sensor(const QString &sensor_name, QWidget *parent)
   toggle_button_ = new SuraButton(SuraButton::Role::Default, tr("ON"), this);
   toggle_button_->setCheckable(true);
   updateButtonStyle();
-  
+
   // Spinner / Circulito de carga
   spinner_ = new QProgressBar(this);
   spinner_->setRange(0, 0); // 💡 Rango (0,0) en Qt crea el modo indeterminado (animación continua)
@@ -101,7 +98,7 @@ Sensor::Sensor(const QString &sensor_name, QWidget *parent)
   spinner_->hide(); // Oculto por defecto
 
   button_layout->addWidget(toggle_button_, 1);
-  
+
   card_layout->addLayout(button_layout);
   card_layout->addWidget(spinner_); // Se coloca debajo del botón
 
@@ -109,11 +106,11 @@ Sensor::Sensor(const QString &sensor_name, QWidget *parent)
 }
 void Sensor::addInfoField(const QString &key, const QString &initial_value)
 {
-  if (fields_map_.contains(key)) return; 
+  if (fields_map_.contains(key)) return;
 
   QFrame *row_frame = new QFrame(info_container_);
   row_frame->setFrameShape(QFrame::NoFrame);
-  
+
   bool is_even = (fields_map_.size() % 2 == 0);
   if (is_even) {
     row_frame->setStyleSheet("QFrame { background-color: #d3d4d6; border-radius: 6px; }");
@@ -122,7 +119,7 @@ void Sensor::addInfoField(const QString &key, const QString &initial_value)
   }
 
   QHBoxLayout *row_layout = new QHBoxLayout(row_frame);
-  row_layout->setContentsMargins(10, 8, 10, 8); 
+  row_layout->setContentsMargins(10, 8, 10, 8);
   row_layout->setSpacing(8);
 
   // Etiqueta del campo (Clave)
@@ -130,18 +127,20 @@ void Sensor::addInfoField(const QString &key, const QString &initial_value)
   label_key->setStyleSheet(
     "font-size: 11px;"
     "font-weight: bold;"
-    "color: #596566;" 
+    "color: #596566;"
     "border: none;"
     "background: transparent;"
   );
-  label_key->setWordWrap(true); 
+  label_key->setWordWrap(true);
+
+
 
   // Valor del campo
   QLabel *label_value = new QLabel(initial_value, row_frame);
   label_value->setStyleSheet(
     "font-size: 12px;"
     "font-weight: bold;"
-    "color: #2c3e50;" 
+    "color: #2c3e50;"
     "border: none;"
     "background: transparent;"
   );
@@ -153,7 +152,7 @@ void Sensor::addInfoField(const QString &key, const QString &initial_value)
   int insert_index = info_layout_->count() - 1;
   info_layout_->insertWidget(insert_index, row_frame);
 
-  fields_map_.insert(key, label_value); 
+  fields_map_.insert(key, label_value);
 
 }
 
@@ -230,7 +229,7 @@ void Sensor::setupRos(rclcpp::Node::SharedPtr node, const QString &robot_name, c
   // Construimos el topic estándar: /robot_name/sensors/sensor_name
   std::string topic_name = QString("/%1/sensors/%2").arg(robot_name, cleaned_sensor_name).toStdString();
 
-  // 💡 Helper lambda para actualizar el campo buscando entre varias claves candidatas 
+  // 💡 Helper lambda para actualizar el campo buscando entre varias claves candidatas
   // (combina nombres de state_interface de Xacro con nombres legibles)
   auto updateAny = [this](const QStringList &candidate_keys, const QString &val) {
     for (const QString &key : candidate_keys) {
@@ -293,7 +292,7 @@ void Sensor::setupRos(rclcpp::Node::SharedPtr node, const QString &robot_name, c
 
   // 4. TWIST STAMPED (Velocidades medidas con timestamp)
   else if (msg_type == "geometry_msgs/msg/TwistWithCovarianceStamped") {
-    
+
     QString clean_sensor_name = sensor_name;
     clean_sensor_name.remove("_sensor");
 
@@ -305,11 +304,11 @@ void Sensor::setupRos(rclcpp::Node::SharedPtr node, const QString &robot_name, c
       topic_name, rclcpp::SystemDefaultsQoS(), [this, updateAny, node](const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr msg) {
 
         QMetaObject::invokeMethod(this, [this, msg, updateAny]() {
-          updateAny({"twist.twist.linear.x", "twist.linear.x", "linear.x", "velocity.x", "linear_velocity.x", "Linear X", "vel_x", "x"}, 
+          updateAny({"twist.twist.linear.x", "twist.linear.x", "linear.x", "velocity.x", "linear_velocity.x", "Linear X", "vel_x", "x"},
                     QString::number(msg->twist.twist.linear.x, 'g', 4)+" m/s");
-          updateAny({"twist.twist.linear.y", "twist.linear.y", "linear.y", "velocity.y", "linear_velocity.y", "Linear Y", "vel_y", "y"}, 
+          updateAny({"twist.twist.linear.y", "twist.linear.y", "linear.y", "velocity.y", "linear_velocity.y", "Linear Y", "vel_y", "y"},
                     QString::number(msg->twist.twist.linear.y, 'g', 4)+" m/s");
-          updateAny({"twist.twist.linear.z", "twist.linear.z", "linear.z", "velocity.z", "linear_velocity.z", "Linear Z", "vel_z", "z"}, 
+          updateAny({"twist.twist.linear.z", "twist.linear.z", "linear.z", "velocity.z", "linear_velocity.z", "Linear Z", "vel_z", "z"},
                     QString::number(msg->twist.twist.linear.z, 'g', 4)+" m/s");
         }, Qt::QueuedConnection);
       });
@@ -346,16 +345,16 @@ void Sensor::setupRos(rclcpp::Node::SharedPtr node, const QString &robot_name, c
           updateAny({"position.position.x", "Pos X"}, QString::number(msg->position.position.x, 'f', 4));
           updateAny({"position.position.y", "Pos Y"}, QString::number(msg->position.position.y, 'f', 4));
           updateAny({"altitude", "Altitude"}, QString::number(msg->altitude, 'f', 2) + " m");
-          
+
           // Orientación RPY (Roll, Pitch, Yaw)
           updateAny({"rpy.x", "Roll", "roll"}, QString::number(msg->rpy.x, 'f', 1));
           updateAny({"rpy.y", "Pitch", "pitch"}, QString::number(msg->rpy.y, 'f', 1));
           updateAny({"rpy.z", "Yaw", "yaw"}, QString::number(msg->rpy.z, 'f', 1));
-          
+
           // Velocidad lineal en el cuerpo del vehículo (Body)
           updateAny({"body_velocity.linear.x", "Vel Body X"}, QString::number(msg->body_velocity.linear.x, 'f', 4));
           updateAny({"body_velocity.linear.y", "Vel Body Y"}, QString::number(msg->body_velocity.linear.y, 'f', 4));
-          
+
           // Aceleraciones en el cuerpo (Body)
           updateAny({"body_acceleration.linear.x", "Acc Body X"}, QString::number(msg->body_acceleration.linear.x, 'f', 4));
         }, Qt::QueuedConnection);
@@ -368,7 +367,7 @@ void Sensor::setupRos(rclcpp::Node::SharedPtr node, const QString &robot_name, c
         QMetaObject::invokeMethod(this, [this, msg, updateAny]() {
           // Devuelve "OK" o "LEAK!" (o "1" / "0") según el valor del booleano
           QString leak_status = msg->data ? "LEAK DETECTED" : "OK";
-          
+
           updateAny({"leak", "leak_status", "water_leak", "state", "data"}, leak_status);
         }, Qt::QueuedConnection);
       });
@@ -376,7 +375,7 @@ void Sensor::setupRos(rclcpp::Node::SharedPtr node, const QString &robot_name, c
 
   // FALLBACK POR DEFECTO
   else {
-    RCLCPP_WARN(node->get_logger(), "Tipo '%s' no mapeado explícitamente para el sensor '%s'.", 
+    RCLCPP_WARN(node->get_logger(), "Tipo '%s' no mapeado explícitamente para el sensor '%s'.",
                 msg_type.toStdString().c_str(), sensor_name.toStdString().c_str());
   }
 }

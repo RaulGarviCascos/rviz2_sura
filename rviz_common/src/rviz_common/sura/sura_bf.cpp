@@ -1,10 +1,10 @@
 #include "rviz_common/sura/sura_bf.hpp"
 #include "rviz_common/visualization_frame.hpp"
 #include "rviz_common/visualization_manager.hpp"
-#include "rclcpp/rclcpp.hpp"
 #include "tabs/thrusters_panel.hpp"
 #include "tabs/settings_panel.hpp"
 #include "tabs/sensor_panel.hpp"
+#include "tabs/controllers_panel.hpp" // <-- CABECERA AÑADIDA
 #include "components/sura_urdf_parser.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <filesystem>
@@ -12,12 +12,14 @@
 #include <QTabBar>
 #include <QDialog>
 
-SuraBF::SuraBF(rviz_common::VisualizationFrame * frame,  QObject * parent)
+
+SuraBF::SuraBF(rviz_common::VisualizationFrame * frame, QObject * parent)
 : QObject(parent),
   frame_(frame),
   tab_widget_(nullptr),
   sensors_tab_(nullptr),
   graphics_tab_(nullptr),
+  controllers_tab_(nullptr),
   thrusters_tab_(nullptr),
   settings_tab_(nullptr),
   rviz_3d_tab_(nullptr),
@@ -35,7 +37,12 @@ SuraBF::~SuraBF()
 void SuraBF::initSuraUi(QWidget * rviz_render_panel)
 {
   if (tab_widget_) return;
-  r_config_ = manager_->getRobotConfig();
+  context_ = std::make_shared<SuraContext>(manager_);
+  if (!context_->isValid()) {
+    return;
+  }
+  ros_node_ = context_->node();
+  r_config_ = context_->robotConfig();
 
   tab_widget_ = new QTabWidget(frame_);
   QString target_dir = QDir::homePath() + "/.cirtesu/xacros";
@@ -52,6 +59,7 @@ void SuraBF::initSuraUi(QWidget * rviz_render_panel)
 
   sensors_tab_ = createSensorsWidget();
   graphics_tab_ = createGraphicsWidget();
+  controllers_tab_ = createControllersWidget();
   thrusters_tab_ = createThrustersWidget();
   settings_tab_ = createSettingsWidget();
   rviz_3d_tab_ = createRviz3DWidget(rviz_render_panel);
@@ -62,9 +70,11 @@ void SuraBF::initSuraUi(QWidget * rviz_render_panel)
 
   tab_widget_->addTab(sensors_tab_, tr("Sensors"));
   tab_widget_->addTab(graphics_tab_, tr("Graphics"));
+  tab_widget_->addTab(controllers_tab_, tr("Controllers"));
   tab_widget_->addTab(thrusters_tab_, tr("Thursters"));
-  tab_widget_->addTab(settings_tab_, tr("Settings"));
   tab_widget_->addTab(rviz_3d_tab_, tr("3D View"));
+  tab_widget_->addTab(settings_tab_, tr("Settings"));
+
   connect(tab_widget_, &QTabWidget::currentChanged, this, [this](int index) {
     emit tabChanged(index);
   });
@@ -81,8 +91,7 @@ void SuraBF::setVisible(bool visible)
 
 QWidget * SuraBF::createSensorsWidget()
 {
-  SensorPanel * sensor_panel = new SensorPanel(frame_->getManager(),tab_widget_);
-  auto ros_node = manager_->getRosNodeAbstraction().lock()->get_raw_node();
+  SensorPanel * sensor_panel = new SensorPanel(context_, tab_widget_);
   if(correct_file_){
     for (const SuraSensorInfo &sensor_info : sensors_) {
       Sensor * ui_card = sensor_panel->addSensor(sensor_info);
@@ -91,13 +100,13 @@ QWidget * SuraBF::createSensorsWidget()
         ui_card->addInfoField(state_name, "0.0");
       }
       ui_card->setupRos(
-        ros_node,
+        ros_node_,
         r_config_.robot_name,
         sensor_info.name,
         sensor_info.params["msg_type"]
       );
     }
-  } else  {
+  } else {
     SuraSensorInfo new_info;
     new_info.name = "DVL (Fallback)";
 
@@ -107,7 +116,7 @@ QWidget * SuraBF::createSensorsWidget()
 
     if (QVBoxLayout *existing_layout = qobject_cast<QVBoxLayout*>(sensor_panel->layout())) {
       QLabel * label = new QLabel(
-        tr("⚠️ Invalid or missing description file:\n%1").arg(local_path_), 
+        tr("⚠️ Invalid or missing description file:\n%1").arg(local_path_),
         sensor_panel
       );
       label->setAlignment(Qt::AlignCenter);
@@ -132,9 +141,22 @@ QWidget * SuraBF::createGraphicsWidget()
   return widget;
 }
 
+// =========================================================================
+// PANEL DE CONTROLADORES REDIRIGIDO A ControllersPanel
+// =========================================================================
+QWidget * SuraBF::createControllersWidget()
+{
+  RCLCPP_INFO(ros_node_->get_logger(), "Cargando ControllersPanel...");
+
+  // Instanciamos el nuevo panel intermedio compartiendo el VisualizationManager
+  ControllersPanel * controllers_panel = new ControllersPanel(context_, tab_widget_);
+
+  return controllers_panel;
+}
+
 QWidget * SuraBF::createThrustersWidget()
 {
-  ThrustersPanel * thrusters_panel = new ThrustersPanel(frame_->getManager(), tab_widget_);
+  ThrustersPanel * thrusters_panel = new ThrustersPanel(context_, tab_widget_);
   if(correct_file_){
     for (const SuraThrusterInfo &thrusterInfo : thrusters_) {
       thrusters_panel->addThruster(thrusterInfo.name);
@@ -144,7 +166,7 @@ QWidget * SuraBF::createThrustersWidget()
 
     if (QVBoxLayout *existing_layout = qobject_cast<QVBoxLayout*>(thrusters_panel->layout())) {
       QLabel * label = new QLabel(
-        tr("⚠️ Invalid or missing description file:\n%1").arg(local_path_), 
+        tr("⚠️ Invalid or missing description file:\n%1").arg(local_path_),
         thrusters_panel
       );
       label->setAlignment(Qt::AlignCenter);
@@ -165,7 +187,7 @@ QWidget * SuraBF::createRviz3DWidget(QWidget * rviz_render_panel)
 {
   QWidget * widget = new QWidget(tab_widget_);
   QVBoxLayout * layout = new QVBoxLayout(widget);
-  layout->setContentsMargins(0, 0, 0, 0); 
+  layout->setContentsMargins(0, 0, 0, 0);
 
   if (rviz_render_panel) {
     rviz_render_panel->setParent(widget);
@@ -183,6 +205,9 @@ QWidget * SuraBF::createRviz3DWidget(QWidget * rviz_render_panel)
 void SuraBF::reloadXacro()
 {
   r_config_ = manager_->getRobotConfig();
+  if (context_) {
+    context_->updateRobotConfig(r_config_);
+  }
   QString target_dir = QDir::homePath() + "/.cirtesu/xacros";
   local_path_ = target_dir + "/" + r_config_.robot_name + ".urdf.xacro";
 
@@ -199,16 +224,17 @@ void SuraBF::reloadXacro()
 
   if (tab_widget_ && sensors_tab_) {
     int index = tab_widget_->indexOf(sensors_tab_);
-    
+
     QWidget * new_sensors_tab = createSensorsWidget();
-    
+
     tab_widget_->removeTab(index);
-    sensors_tab_->deleteLater(); 
+    sensors_tab_->deleteLater();
     sensors_tab_ = new_sensors_tab;
-    
+
     tab_widget_->insertTab(index, sensors_tab_, tr("Sensors"));
   }
 }
+
 void SuraBF::detachTab(int index)
 {
   if (index < 0) return;
@@ -220,12 +246,12 @@ void SuraBF::detachTab(int index)
 
   QDialog *float_window = new QDialog(frame_);
   float_window->setWindowTitle(tr("%1 (Flotante)").arg(title));
-  float_window->setAttribute(Qt::WA_DeleteOnClose); 
+  float_window->setAttribute(Qt::WA_DeleteOnClose);
   float_window->resize(content_widget->sizeHint().expandedTo(QSize(600, 400)));
 
   QVBoxLayout *layout = new QVBoxLayout(float_window);
   layout->setContentsMargins(5, 5, 5, 5);
-  
+
   tab_widget_->removeTab(index);
   layout->addWidget(content_widget);
   content_widget->show();

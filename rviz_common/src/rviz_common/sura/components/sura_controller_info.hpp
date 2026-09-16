@@ -1,11 +1,12 @@
 #pragma once
+#include <string>
+#include <unordered_map>
 #include <QString>
 #include <QMap>
-#include <QStringList>
 
-
-struct SuraSensorInfo {
+struct ControllerInfo {
   QString name;
+  QString type;
+  QString state;
   QMap<QString, QString> params;
-  QStringList state_interfaces;
 };

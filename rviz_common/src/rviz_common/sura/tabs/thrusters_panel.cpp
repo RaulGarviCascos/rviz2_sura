@@ -1,27 +1,29 @@
 #include "thrusters_panel.hpp"
-#include "rviz_common/visualization_manager.hpp"
-#include "rviz_common/ros_integration/ros_node_abstraction_iface.hpp"
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QGroupBox>
 #include <QScrollArea>
-#include "../components/sura_button.hpp" 
+#include "../components/sura_button.hpp"
 #include "std_msgs/msg/float64_multi_array.hpp"
 #include <QTimer>
 #include <QResizeEvent>
 
-ThrustersPanel::ThrustersPanel(rviz_common::VisualizationManager * manager, QWidget *parent)
-  : QWidget(parent), manager_(manager), is_armed_(false), current_columns_(-1)
+ThrustersPanel::ThrustersPanel(std::shared_ptr<SuraContext> context, QWidget *parent)
+  : QWidget(parent), context_(std::move(context)), is_armed_(false), current_columns_(-1)
 {
-  QString robot_name = manager_->getRobotConfig().robot_name;
+  if (!context_ || !context_->isValid()) {
+    RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "ThrustersPanel: SURA context is not available.");
+    return;
+  }
 
-  auto ros_node = manager_->getRosNodeAbstraction().lock()->get_raw_node();
+  QString robot_name = context_->robotName();
+  const auto & ros_node = context_->node();
   thruster_pub_ = ros_node->create_publisher<std_msgs::msg::Float64MultiArray>(
     tr("/%1/controller/thruster_test_controller/commands").arg(robot_name).toStdString(), 10);
-  
-  std::string service_name = "/" + robot_name.toStdString() + "/controller/controller_manager/switch_controller";
-  switch_controller_client_ = ros_node->create_client<controller_manager_msgs::srv::SwitchController>(service_name);
-  
+
+  switch_controller_client_ = ros_node->create_client<controller_manager_msgs::srv::SwitchController>(
+    context_->controllerManagerService("switch_controller"));
+
   QVBoxLayout *main_layout = new QVBoxLayout(this);
   QLabel *title = new QLabel(tr("Thrusters control panel - %1").arg(robot_name), this);
   title->setAlignment(Qt::AlignCenter);
@@ -39,8 +41,8 @@ ThrustersPanel::ThrustersPanel(rviz_common::VisualizationManager * manager, QWid
 
   scroll_area_ = new QScrollArea(this);
   scroll_area_->setWidget(scroll_widget_);
-  scroll_area_->setWidgetResizable(true); 
-  scroll_area_->setFrameShape(QFrame::NoFrame); 
+  scroll_area_->setWidgetResizable(true);
+  scroll_area_->setFrameShape(QFrame::NoFrame);
   scroll_area_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   scroll_area_->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
@@ -52,12 +54,12 @@ ThrustersPanel::ThrustersPanel(rviz_common::VisualizationManager * manager, QWid
   btn_save_ = new SuraButton(SuraButton::Role::Success, tr("Save"), this);
   btn_save_->setCheckable(true);
   grid_buttons->addWidget(btn_save_, 0, 0);
-  
+
   btn_arm_ = new SuraButton(SuraButton::Role::Warning, tr("Activate"), this);
   btn_arm_->setCheckable(true);
   grid_buttons->addWidget(btn_arm_, 0, 1);
   connect(btn_arm_, &SuraButton::clicked, this, &ThrustersPanel::onArmButtonClicked);
-  
+
   box->setLayout(grid_buttons);
   main_layout->addWidget(box);
   setLayout(main_layout);
@@ -78,7 +80,7 @@ ThrustersPanel::ThrustersPanel(rviz_common::VisualizationManager * manager, QWid
 
 Thruster* ThrustersPanel::addThruster(const QString &name){
   if (thruster_map_.contains(name)) {
-    return thruster_map_[name]; 
+    return thruster_map_[name];
   }
 
   Thruster *new_thruster = new Thruster(name, scroll_widget_);
@@ -86,7 +88,7 @@ Thruster* ThrustersPanel::addThruster(const QString &name){
   new_thruster->setMaximumWidth(350);
 
   thruster_map_.insert(name, new_thruster);
-  thruster_list_.append(new_thruster); 
+  thruster_list_.append(new_thruster);
 
   connect(new_thruster, &Thruster::runningChanged, this, [this, name](bool armed) {
       if (armed) {
@@ -102,7 +104,7 @@ Thruster* ThrustersPanel::addThruster(const QString &name){
 
 void ThrustersPanel::onArmButtonClicked()
 {
-  is_armed_ = btn_arm_->isChecked(); 
+  is_armed_ = btn_arm_->isChecked();
   updateArmed();
 }
 
@@ -154,28 +156,28 @@ void ThrustersPanel::updateArmed()
 void ThrustersPanel::resizeEvent(QResizeEvent *event)
 {
   QWidget::resizeEvent(event);
-  
+
   int num_thrusters = static_cast<int>(thruster_list_.size());
   if (num_thrusters == 0) return;
 
   int available_width = event->size().width() - 50;
   if (available_width < 0) available_width = 0;
-  
-  int thruster_width = 250; 
+
+  int thruster_width = 250;
   int cols = available_width / thruster_width;
-  if (cols < 1) cols = 1;                  
+  if (cols < 1) cols = 1;
   if (cols > num_thrusters) cols = num_thrusters;
-  
+
   if (cols == current_columns_) return;
   current_columns_ = cols;
-  
+
   for (int i = 0; i < num_thrusters; ++i) {
-    thrusters_grid_->removeWidget(thruster_list_[i]); 
-    
+    thrusters_grid_->removeWidget(thruster_list_[i]);
+
     int row = i / cols;
     int col = i % cols;
-    
-    thrusters_grid_->addWidget(thruster_list_[i], row, col); 
+
+    thrusters_grid_->addWidget(thruster_list_[i], row, col);
   }
 
   if (scroll_area_->widget()) {

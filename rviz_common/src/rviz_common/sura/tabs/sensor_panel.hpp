@@ -13,16 +13,14 @@
 #include "rclcpp/rclcpp.hpp"
 #include <QTimer>
 #include "../components/sura_sensors_info.hpp"
-
-namespace rviz_common { class VisualizationManager; }
-
+#include "../components/sura_context.hpp"
 
 class SensorPanel : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit SensorPanel(rviz_common::VisualizationManager *manager, QWidget *parent = nullptr);
+  explicit SensorPanel(std::shared_ptr<SuraContext> context, QWidget *parent = nullptr);
   ~SensorPanel() override = default;
 
   // Crea y añade un nuevo sensor al panel automáticamente
@@ -37,11 +35,11 @@ public:
     }
 
 private:
-  rviz_common::VisualizationManager * manager_;
-  void rearrangeGrid();                      
-  int current_calculated_columns_ = -1;      
+  std::shared_ptr<SuraContext> context_;
+  void rearrangeGrid();
+  int current_calculated_columns_ = -1;
   QList<Sensor*> sensors_list_;
-  
+
   QLabel *title_label_;
   QScrollArea *scroll_area_;
   QWidget *scroll_container_;

@@ -37,14 +37,12 @@ SuraBF::~SuraBF()
 void SuraBF::initSuraUi(QWidget * rviz_render_panel)
 {
   if (tab_widget_) return;
-  auto node_abs = manager_->getRosNodeAbstraction().lock();
-  if (node_abs) {
-    ros_node_ = node_abs->get_raw_node();
-  } else {
-    RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "No se pudo obtener el nodo de ROS 2 desde RViz.");
+  context_ = std::make_shared<SuraContext>(manager_);
+  if (!context_->isValid()) {
     return;
   }
-  r_config_ = manager_->getRobotConfig();
+  ros_node_ = context_->node();
+  r_config_ = context_->robotConfig();
 
   tab_widget_ = new QTabWidget(frame_);
   QString target_dir = QDir::homePath() + "/.cirtesu/xacros";
@@ -93,7 +91,7 @@ void SuraBF::setVisible(bool visible)
 
 QWidget * SuraBF::createSensorsWidget()
 {
-  SensorPanel * sensor_panel = new SensorPanel(frame_->getManager(), tab_widget_);
+  SensorPanel * sensor_panel = new SensorPanel(context_, tab_widget_);
   if(correct_file_){
     for (const SuraSensorInfo &sensor_info : sensors_) {
       Sensor * ui_card = sensor_panel->addSensor(sensor_info);
@@ -151,14 +149,14 @@ QWidget * SuraBF::createControllersWidget()
   RCLCPP_INFO(ros_node_->get_logger(), "Cargando ControllersPanel...");
 
   // Instanciamos el nuevo panel intermedio compartiendo el VisualizationManager
-  ControllersPanel * controllers_panel = new ControllersPanel(frame_->getManager(), tab_widget_);
+  ControllersPanel * controllers_panel = new ControllersPanel(context_, tab_widget_);
 
   return controllers_panel;
 }
 
 QWidget * SuraBF::createThrustersWidget()
 {
-  ThrustersPanel * thrusters_panel = new ThrustersPanel(frame_->getManager(), tab_widget_);
+  ThrustersPanel * thrusters_panel = new ThrustersPanel(context_, tab_widget_);
   if(correct_file_){
     for (const SuraThrusterInfo &thrusterInfo : thrusters_) {
       thrusters_panel->addThruster(thrusterInfo.name);
@@ -207,6 +205,9 @@ QWidget * SuraBF::createRviz3DWidget(QWidget * rviz_render_panel)
 void SuraBF::reloadXacro()
 {
   r_config_ = manager_->getRobotConfig();
+  if (context_) {
+    context_->updateRobotConfig(r_config_);
+  }
   QString target_dir = QDir::homePath() + "/.cirtesu/xacros";
   local_path_ = target_dir + "/" + r_config_.robot_name + ".urdf.xacro";
 

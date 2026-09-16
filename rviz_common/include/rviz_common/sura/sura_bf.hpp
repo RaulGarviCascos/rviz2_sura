@@ -14,6 +14,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include <controller_manager_msgs/srv/list_controllers.hpp>
 #include "../../rviz_common/src/rviz_common/sura/components/sura_controller_info.hpp"
+#include "../../rviz_common/src/rviz_common/sura/components/sura_context.hpp"
 #include <rcl_interfaces/srv/get_parameters.hpp>
 
 namespace rviz_common {
@@ -74,6 +75,7 @@ private:
   RobotConfig r_config_;
   rclcpp::Node::SharedPtr ros_node_;
   rclcpp::Client<controller_manager_msgs::srv::ListControllers>::SharedPtr controller_client_;
+  std::shared_ptr<SuraContext> context_;
 };
 
 #endif  // RVIZ_COMMON__SURA__SURA_BF_HPP_

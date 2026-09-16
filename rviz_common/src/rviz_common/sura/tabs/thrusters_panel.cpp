@@ -1,6 +1,4 @@
 #include "thrusters_panel.hpp"
-#include "rviz_common/visualization_manager.hpp"
-#include "rviz_common/ros_integration/ros_node_abstraction_iface.hpp"
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QGroupBox>
@@ -10,17 +8,21 @@
 #include <QTimer>
 #include <QResizeEvent>
 
-ThrustersPanel::ThrustersPanel(rviz_common::VisualizationManager * manager, QWidget *parent)
-  : QWidget(parent), manager_(manager), is_armed_(false), current_columns_(-1)
+ThrustersPanel::ThrustersPanel(std::shared_ptr<SuraContext> context, QWidget *parent)
+  : QWidget(parent), context_(std::move(context)), is_armed_(false), current_columns_(-1)
 {
-  QString robot_name = manager_->getRobotConfig().robot_name;
+  if (!context_ || !context_->isValid()) {
+    RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "ThrustersPanel: SURA context is not available.");
+    return;
+  }
 
-  auto ros_node = manager_->getRosNodeAbstraction().lock()->get_raw_node();
+  QString robot_name = context_->robotName();
+  const auto & ros_node = context_->node();
   thruster_pub_ = ros_node->create_publisher<std_msgs::msg::Float64MultiArray>(
     tr("/%1/controller/thruster_test_controller/commands").arg(robot_name).toStdString(), 10);
 
-  std::string service_name = "/" + robot_name.toStdString() + "/controller/controller_manager/switch_controller";
-  switch_controller_client_ = ros_node->create_client<controller_manager_msgs::srv::SwitchController>(service_name);
+  switch_controller_client_ = ros_node->create_client<controller_manager_msgs::srv::SwitchController>(
+    context_->controllerManagerService("switch_controller"));
 
   QVBoxLayout *main_layout = new QVBoxLayout(this);
   QLabel *title = new QLabel(tr("Thrusters control panel - %1").arg(robot_name), this);

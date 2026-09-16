@@ -8,8 +8,7 @@
 #include "controller_manager_msgs/srv/switch_controller.hpp"
 #include <QScrollArea>
 #include <QGridLayout>
-
-namespace rviz_common { class VisualizationManager; }
+#include "../components/sura_context.hpp"
 
 class ThrustersPanel : public QWidget
 {
@@ -19,7 +18,7 @@ public:
   Thruster* addThruster(const QString &name);
   Thruster* getThruster(const QString &name) const;
 
-explicit ThrustersPanel(rviz_common::VisualizationManager *manager, QWidget *parent = nullptr);
+explicit ThrustersPanel(std::shared_ptr<SuraContext> context, QWidget *parent = nullptr);
 ~ThrustersPanel() override = default;
 
 private slots:
@@ -27,7 +26,7 @@ private slots:
 
 
 private:
-  rviz_common::VisualizationManager * manager_;
+  std::shared_ptr<SuraContext> context_;
   rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr thruster_pub_;
   rclcpp::Client<controller_manager_msgs::srv::SwitchController>::SharedPtr switch_controller_client_;
   SuraButton *btn_save_;

@@ -10,13 +10,13 @@ bool SuraUrdfParser::parseUrdf(const QString &file_path)
   }
 
   sensors_.clear();
-  thrusters_.clear(); 
-  
+  thrusters_.clear();
+
   QXmlStreamReader xml(&file);
 
   while (!xml.atEnd() && !xml.hasError()) {
     QXmlStreamReader::TokenType token = xml.readNext();
-    
+
     if (token == QXmlStreamReader::StartElement) {
       if (xml.name().toString() == "ros2_control") {
         parseRos2Control(xml);
@@ -38,7 +38,7 @@ void SuraUrdfParser::parseRos2Control(QXmlStreamReader &xml)
   // Seguimos leyendo hasta encontrar el cierre </ros2_control>
   while (!xml.atEnd() && !(xml.tokenType() == QXmlStreamReader::EndElement && xml.name().toString() == "ros2_control")) {
     QXmlStreamReader::TokenType token = xml.readNext();
-    
+
     if (token == QXmlStreamReader::StartElement) {
       if (xml.name().toString() == "sensor") {
         parseSensor(xml);
@@ -50,7 +50,7 @@ void SuraUrdfParser::parseRos2Control(QXmlStreamReader &xml)
         }
       }
     }
-   
+
   }
 }
 
@@ -63,13 +63,13 @@ void SuraUrdfParser::parseSensor(QXmlStreamReader &xml)
   // Seguimos leyendo hasta encontrar el cierre </sensor>
   while (!xml.atEnd() && !(xml.tokenType() == QXmlStreamReader::EndElement && xml.name().toString() == "sensor")) {
     QXmlStreamReader::TokenType token = xml.readNext();
-    
+
     if (token == QXmlStreamReader::StartElement) {
       QString tag_name = xml.name().toString();
-      
+
       if (tag_name == "param") {
         QString param_name = xml.attributes().value("name").toString();
-        QString param_value = xml.readElementText(); 
+        QString param_value = xml.readElementText();
 
         // Si el parámetro se llama "broadcaster", le asignamos un índice incremental
         if (param_name == "broadcaster") {
@@ -96,7 +96,7 @@ void SuraUrdfParser::parseThruster(QXmlStreamReader &xml)
   SuraThrusterInfo thruster;
   // Guardamos el nombre del joint (motor)
   thruster.name = xml.attributes().value("name").toString();
- 
+
   QStringList parts = thruster.name.split('/');
 
   thruster.name = parts[1];
@@ -104,20 +104,20 @@ void SuraUrdfParser::parseThruster(QXmlStreamReader &xml)
   // Seguimos leyendo hasta encontrar el cierre </joint>
   while (!xml.atEnd() && !(xml.tokenType() == QXmlStreamReader::EndElement && xml.name().toString() == "joint")) {
     QXmlStreamReader::TokenType token = xml.readNext();
-    
+
     if (token == QXmlStreamReader::StartElement) {
       QString tag_name = xml.name().toString();
-      
+
       if (tag_name == "param") {
         QString param_name = xml.attributes().value("name").toString();
-        QString param_value = xml.readElementText(); 
+        QString param_value = xml.readElementText();
         thruster.params.insert(param_name, param_value);
-      } 
+      }
       else if (tag_name == "state_interface") {
         QString interface_name = xml.attributes().value("name").toString();
         thruster.state_interfaces.append(interface_name);
       }
-      else if (tag_name == "command_interface") { 
+      else if (tag_name == "command_interface") {
         QString interface_name = xml.attributes().value("name").toString();
         thruster.command_interfaces.append(interface_name);
       }

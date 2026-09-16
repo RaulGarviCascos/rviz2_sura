@@ -118,7 +118,7 @@ QWidget * SuraBF::createSensorsWidget()
 
     if (QVBoxLayout *existing_layout = qobject_cast<QVBoxLayout*>(sensor_panel->layout())) {
       QLabel * label = new QLabel(
-        tr("⚠️ Invalid or missing description file:\n%1").arg(local_path_), 
+        tr("⚠️ Invalid or missing description file:\n%1").arg(local_path_),
         sensor_panel
       );
       label->setAlignment(Qt::AlignCenter);
@@ -149,10 +149,10 @@ QWidget * SuraBF::createGraphicsWidget()
 QWidget * SuraBF::createControllersWidget()
 {
   RCLCPP_INFO(ros_node_->get_logger(), "Cargando ControllersPanel...");
-  
+
   // Instanciamos el nuevo panel intermedio compartiendo el VisualizationManager
   ControllersPanel * controllers_panel = new ControllersPanel(frame_->getManager(), tab_widget_);
-  
+
   return controllers_panel;
 }
 
@@ -168,7 +168,7 @@ QWidget * SuraBF::createThrustersWidget()
 
     if (QVBoxLayout *existing_layout = qobject_cast<QVBoxLayout*>(thrusters_panel->layout())) {
       QLabel * label = new QLabel(
-        tr("⚠️ Invalid or missing description file:\n%1").arg(local_path_), 
+        tr("⚠️ Invalid or missing description file:\n%1").arg(local_path_),
         thrusters_panel
       );
       label->setAlignment(Qt::AlignCenter);
@@ -189,7 +189,7 @@ QWidget * SuraBF::createRviz3DWidget(QWidget * rviz_render_panel)
 {
   QWidget * widget = new QWidget(tab_widget_);
   QVBoxLayout * layout = new QVBoxLayout(widget);
-  layout->setContentsMargins(0, 0, 0, 0); 
+  layout->setContentsMargins(0, 0, 0, 0);
 
   if (rviz_render_panel) {
     rviz_render_panel->setParent(widget);
@@ -223,13 +223,13 @@ void SuraBF::reloadXacro()
 
   if (tab_widget_ && sensors_tab_) {
     int index = tab_widget_->indexOf(sensors_tab_);
-    
+
     QWidget * new_sensors_tab = createSensorsWidget();
-    
+
     tab_widget_->removeTab(index);
-    sensors_tab_->deleteLater(); 
+    sensors_tab_->deleteLater();
     sensors_tab_ = new_sensors_tab;
-    
+
     tab_widget_->insertTab(index, sensors_tab_, tr("Sensors"));
   }
 }
@@ -245,12 +245,12 @@ void SuraBF::detachTab(int index)
 
   QDialog *float_window = new QDialog(frame_);
   float_window->setWindowTitle(tr("%1 (Flotante)").arg(title));
-  float_window->setAttribute(Qt::WA_DeleteOnClose); 
+  float_window->setAttribute(Qt::WA_DeleteOnClose);
   float_window->resize(content_widget->sizeHint().expandedTo(QSize(600, 400)));
 
   QVBoxLayout *layout = new QVBoxLayout(float_window);
   layout->setContentsMargins(5, 5, 5, 5);
-  
+
   tab_widget_->removeTab(index);
   layout->addWidget(content_widget);
   content_widget->show();

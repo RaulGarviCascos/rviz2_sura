@@ -19,7 +19,7 @@ class ControllerCardWidget : public QWidget
 
 public:
   explicit ControllerCardWidget(
-    const ControllerInfo & info, 
+    const ControllerInfo & info,
     rclcpp::Node::SharedPtr ros_node);
 
   void updateState(const QString & state);
@@ -27,7 +27,7 @@ public:
 
 signals:
   void toggleRequested(const QString & controller_name, bool enable);
-  
+
 
 private slots:
   void onToggleButtonClicked();
@@ -49,7 +49,7 @@ private:
   QLabel * name_label_{nullptr};
   QWidget * info_container_{nullptr};
   QVBoxLayout * info_layout_{nullptr};
-  
+
   // Usamos SuraButton en lugar de QPushButton
   SuraButton * toggle_button_{nullptr};
   SuraButton * apply_button_{nullptr};

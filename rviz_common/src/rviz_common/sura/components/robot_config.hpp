@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 #include <QString>
 #include <rviz_common/config.hpp>
 
@@ -11,7 +11,7 @@ struct RobotConfig {
 
   void save(rviz_common::Config config) const
   {
-    
+
     config.mapSetValue("RobotName", robot_name);
     config.mapSetValue("Ip",ip);
     config.mapSetValue("UserName",user);

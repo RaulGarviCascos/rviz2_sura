@@ -1,9 +1,9 @@
-#ifndef Thruster_HPP
-#define Thruster_HPP
+#ifndef RVIZ_COMMON__SURA__COMPONENTS__THRUSTER_HPP_
+#define RVIZ_COMMON__SURA__COMPONENTS__THRUSTER_HPP_
 
 #include <QWidget>
 #include <QSlider>
-#include <QDoubleSpinBox> 
+#include <QDoubleSpinBox>
 #include <QCheckBox>
 #include <QLabel>
 #include <QVBoxLayout>
@@ -41,9 +41,9 @@ private:
   QDoubleSpinBox* thruster_max_spin_;
   QCheckBox* thruster_invert_check_;
   QLabel *status_led_;
-  SuraButton *run_button_; 
-  bool is_running_ = false;   
-  void updateLedStyle();    
+  SuraButton *run_button_;
+  bool is_running_ = false;
+  void updateLedStyle();
 };
 
-#endif // Thruster_HPP
+#endif  // RVIZ_COMMON__SURA__COMPONENTS__THRUSTER_HPP_

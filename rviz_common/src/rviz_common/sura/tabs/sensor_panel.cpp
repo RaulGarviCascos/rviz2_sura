@@ -39,7 +39,7 @@ SensorPanel::SensorPanel(rviz_common::VisualizationManager * manager, QWidget *p
   scroll_area_->setFrameShape(QFrame::NoFrame);
   scroll_area_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   scroll_area_->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-  
+
   main_layout->addWidget(scroll_area_);
   setLayout(main_layout);
 
@@ -57,19 +57,19 @@ SensorPanel::SensorPanel(rviz_common::VisualizationManager * manager, QWidget *p
   // Timer para consultar periódicamente el estado de forma asíncrona (cada 2 segundos)
   status_timer_ = new QTimer(this);
   connect(status_timer_, &QTimer::timeout, this, &SensorPanel::checkControllersStatus);
-  status_timer_->start(2000); 
+  status_timer_->start(2000);
 }
 
 Sensor* SensorPanel::addSensor(const SuraSensorInfo sensor)
 {
   QString sensor_name=sensor.name;
   if (sensors_map_.contains(sensor_name)) {
-    return sensors_map_[sensor_name]; 
+    return sensors_map_[sensor_name];
   }
 
   // 1. Instanciamos la tarjeta del sensor
   Sensor *new_sensor = new Sensor(sensor_name, scroll_container_);
-  
+
   // 💡 ESTABLECE LÍMITES: Así evitamos que se deformen en pantallas gigantes o se aplasten en las pequeñas
   new_sensor->setMinimumWidth(220); // Ancho mínimo recomendado para la tarjeta
   new_sensor->setMaximumWidth(350); // Ancho máximo para que no se estire de forma absurda
@@ -110,11 +110,11 @@ void SensorPanel::checkControllersStatus()
     request, [this](rclcpp::Client<controller_manager_msgs::srv::ListControllers>::SharedFuture future) {
       try {
         auto response = future.get();
-        
+
         QMap<QString, bool> active_controllers;
         for (const auto & ctrl : response->controller) {
           active_controllers.insert(
-            QString::fromStdString(ctrl.name), 
+            QString::fromStdString(ctrl.name),
             (ctrl.state == "active")
           );
         }
@@ -122,7 +122,7 @@ void SensorPanel::checkControllersStatus()
         for (Sensor *sensor : sensors_list_) {
           QString sensor_name = sensor->getSensorName();
           const SuraSensorInfo *sensor_info = getSuraSensorInfo(sensor_name);
-          
+
           if (!sensor_info) continue;
 
           bool sensor_is_active = false;
@@ -134,7 +134,7 @@ void SensorPanel::checkControllersStatus()
               QString bc_name = it.value();
 
               if (active_controllers.value(bc_name, false)) {
-                sensor_is_active = true; 
+                sensor_is_active = true;
               }
             }
           }
@@ -213,10 +213,10 @@ void SensorPanel::handleSensorStateChanged(const QString &sensor_name, bool enab
       try {
         auto response = future.get();
         if (response->ok) {
-          RCLCPP_INFO(rclcpp::get_logger("rviz2"), "Broadcasters de %s %s con éxito", 
+          RCLCPP_INFO(rclcpp::get_logger("rviz2"), "Broadcasters de %s %s con éxito",
                       sensor_name.toStdString().c_str(), enabled ? "activados" : "desactivados");
         } else {
-          RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "Fallo al cambiar el estado de los broadcasters de %s", 
+          RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "Fallo al cambiar el estado de los broadcasters de %s",
                        sensor_name.toStdString().c_str());
         }
       } catch (const std::exception &e) {
@@ -241,9 +241,9 @@ void SensorPanel::rearrangeGrid()
 
   // 1. Calculamos el espacio real disponible en el scroll area
   int available_width = scroll_area_->width();
-  
+
   // Anchura objetivo de cada tarjeta + márgenes y espaciados del layout
-  int card_width = 220; 
+  int card_width = 220;
   int spacing = grid_layout_->spacing();
   int margins = grid_layout_->contentsMargins().left() + grid_layout_->contentsMargins().right();
 
@@ -266,7 +266,7 @@ void SensorPanel::rearrangeGrid()
   int col = 0;
   for (Sensor *sensor : sensors_list_) {
     grid_layout_->addWidget(sensor, row, col, Qt::AlignTop);
-    
+
     col++;
     if (col >= cols) {
       col = 0;
@@ -276,7 +276,7 @@ void SensorPanel::rearrangeGrid()
 
   // 5. Empujamos todo hacia arriba para que no floten verticalmente si hay pocas filas
   grid_layout_->setRowStretch(row + 1, 1);
-  
+
   // Forzamos a que todas las columnas tengan el mismo peso de estiramiento
   for (int c = 0; c < cols; ++c) {
     grid_layout_->setColumnStretch(c, 1);

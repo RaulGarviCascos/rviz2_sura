@@ -1,13 +1,10 @@
 #include "controllers_panel.hpp"
-#include <rcl_interfaces/srv/list_parameters.hpp>
-#include <rcl_interfaces/srv/get_parameters.hpp>
 #include "../components/sura_controller_info.hpp"
-#include <QVBoxLayout>
-#include <QScrollArea>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QScrollArea>
-#include <QLabel>
+#include <rcl_interfaces/srv/get_parameters.hpp>
+#include <rcl_interfaces/srv/list_parameters.hpp>
 
 ControllersPanel::ControllersPanel(rviz_common::VisualizationManager * manager, QWidget * parent)
 : QWidget(parent), manager_(manager), fetching_in_progress_(false)
@@ -99,17 +96,17 @@ void ControllersPanel::checkControllersStatus()
               // 🔄 SI YA EXISTE: Simplemente actualizamos su estado (active/inactive)
               // Esto cambiará el LED, el botón y quitará el modo de carga (spinner)
               controllers_map_[ctrl_name]->updateState(ctrl_state);
-            } 
+            }
             else {
               // 🆕 SI NO EXISTE: Pedimos parámetros para crear la tarjeta por primera vez
               QString robot_name = manager_->getRobotConfig().robot_name;
               QString full_node_path = QString("/%1/controller/%2").arg(robot_name, ctrl_name);
-              
+
               if (!ctrl_name.contains("broadcaster", Qt::CaseInsensitive) &&
-                  !ctrl_type.contains("broadcaster", Qt::CaseInsensitive)) 
+                  !ctrl_type.contains("broadcaster", Qt::CaseInsensitive))
               {
                 requestNodeParameters(ctrl_name, full_node_path, ctrl_state, ctrl_type);
-              }           
+              }
             }
           }
         }, Qt::QueuedConnection);
@@ -120,9 +117,9 @@ void ControllersPanel::checkControllersStatus()
     });
 }
 void ControllersPanel::requestNodeParameters(
-  const QString & ctrl_name, 
-  const QString & node_path, 
-  const QString & ctrl_state, 
+  const QString & ctrl_name,
+  const QString & node_path,
+  const QString & ctrl_state,
   const QString & ctrl_type)
 {
   std::string std_node_path = node_path.toStdString();
@@ -134,9 +131,9 @@ void ControllersPanel::requestNodeParameters(
   list_client->async_send_request(
     list_req, [this, list_client, ctrl_name, ctrl_state, ctrl_type, std_node_path](
       rclcpp::Client<rcl_interfaces::srv::ListParameters>::SharedFuture list_future) {
-      
+
       try {
-        
+
         auto list_res = list_future.get();
         std::vector<std::string> filtered_names;
 
@@ -175,7 +172,7 @@ void ControllersPanel::requestNodeParameters(
 
               for (size_t i = 0; i < filtered_names.size(); ++i) {
                 if (get_res->values[i].type == rcl_interfaces::msg::ParameterType::PARAMETER_NOT_SET) continue;
-                
+
                 rclcpp::Parameter p(filtered_names[i], rclcpp::ParameterValue(get_res->values[i]));
                 info.params.insert(QString::fromStdString(filtered_names[i]), QString::fromStdString(p.value_to_string()));
               }
@@ -214,13 +211,13 @@ void ControllersPanel::addOrUpdateController(const ControllerInfo & info)
     return;
   }
   ControllerCardWidget * card = new ControllerCardWidget(info, ros_node_);
-  
+
   // Conectamos la señal de la tarjeta al método del panel
-  connect(card, &ControllerCardWidget::toggleRequested, 
+  connect(card, &ControllerCardWidget::toggleRequested,
           this, &ControllersPanel::handleControllerSwitch);
 
   int count = controllers_map_.size();
-  int columns = 5; 
+  int columns = 5;
   int row = count / columns;
   int col = count % columns;
 
@@ -241,7 +238,7 @@ void ControllersPanel::rearrangeGrid()
   if (controllers_list_.isEmpty()) return;
 
   int available_width = scroll_area_->width();
-  int card_width = 300; 
+  int card_width = 300;
   int spacing = grid_layout_->spacing();
   int margins = grid_layout_->contentsMargins().left() + grid_layout_->contentsMargins().right();
 
@@ -260,7 +257,7 @@ void ControllersPanel::rearrangeGrid()
   int col = 0;
   for (ControllerCardWidget *card : controllers_list_) {
     grid_layout_->addWidget(card, row, col, Qt::AlignTop);
-    
+
     col++;
     if (col >= cols) {
       col = 0;
@@ -282,10 +279,10 @@ void ControllersPanel::handleControllerSwitch(const QString & controller_name, b
   if (!ros_node_) return;
 
   QString robot_name = manager_->getRobotConfig().robot_name;
-  
+
   if (!switch_controller_client_->wait_for_service(std::chrono::milliseconds(300))) {
     RCLCPP_ERROR(ros_node_->get_logger(), "Servicio switch_controller no disponible");
-    
+
     // Si falla la conexión, le quitamos el estado de carga a la tarjeta
     if (controllers_map_.contains(controller_name)) {
       controllers_map_[controller_name]->setLoading(false);
@@ -294,7 +291,7 @@ void ControllersPanel::handleControllerSwitch(const QString & controller_name, b
   }
 
   auto req = std::make_shared<controller_manager_msgs::srv::SwitchController::Request>();
-  
+
   if (enable) {
     req->activate_controllers.push_back(controller_name.toStdString());
   } else {
@@ -310,10 +307,10 @@ req->activate_asap = true;
       try {
         auto response = future.get();
         if (response->ok) {
-          RCLCPP_INFO(rclcpp::get_logger("rviz2"), "Controlador %s %s con éxito", 
+          RCLCPP_INFO(rclcpp::get_logger("rviz2"), "Controlador %s %s con éxito",
                       controller_name.toStdString().c_str(), enable ? "activados" : "desactivados");
         } else {
-          RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "Fallo al cambiar el estado del controlador %s", 
+          RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "Fallo al cambiar el estado del controlador %s",
                        controller_name.toStdString().c_str());
         }
       } catch (const std::exception &e) {

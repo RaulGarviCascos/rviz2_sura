@@ -1,8 +1,8 @@
-#ifndef Settings_PANEL_HPP
-#define Settings_PANEL_HPP
+#ifndef RVIZ_COMMON__SURA__TABS__SETTINGS_PANEL_HPP_
+#define RVIZ_COMMON__SURA__TABS__SETTINGS_PANEL_HPP_
 
 #include <QWidget>
-#include <QScrollArea> 
+#include <QScrollArea>
 #include <QGridLayout>
 #include <QLineEdit>
 #include "../components/sura_button.hpp"
@@ -45,4 +45,4 @@ private:
 
 };
 
-#endif // Settings_PANEL_HPP
+#endif  // RVIZ_COMMON__SURA__TABS__SETTINGS_PANEL_HPP_

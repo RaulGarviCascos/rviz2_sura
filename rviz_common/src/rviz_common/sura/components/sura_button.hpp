@@ -1,5 +1,5 @@
-#ifndef SURA_BUTTON_HPP
-#define SURA_BUTTON_HPP
+#ifndef RVIZ_COMMON__SURA__COMPONENTS__SURA_BUTTON_HPP_
+#define RVIZ_COMMON__SURA__COMPONENTS__SURA_BUTTON_HPP_
 
 #include <QPushButton>
 
@@ -27,4 +27,4 @@ private:
   void updateStyle();
 };
 
-#endif // SURA_BUTTON_HPP
+#endif  // RVIZ_COMMON__SURA__COMPONENTS__SURA_BUTTON_HPP_

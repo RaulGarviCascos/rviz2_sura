@@ -19,30 +19,30 @@ void SuraButton::updateStyle()
   QIcon button_icon;
 
   switch (current_role_) {
-    case Role::Success: 
+    case Role::Success:
       normal_color  = "#2ecc71"; hover_color   = "#27ae60"; pressed_color = "#1e8449";
       button_icon = style()->standardIcon(QStyle::SP_DialogSaveButton);
       color = "white";
       break;
 
-    case Role::Warning: 
+    case Role::Warning:
       normal_color  = "#e67e22"; hover_color   = "#d35400"; pressed_color = "#b04a00";
       button_icon = style()->standardIcon(QStyle::SP_MessageBoxWarning);
       color = "white";
       break;
 
-    case Role::Danger:  
+    case Role::Danger:
       normal_color  = "#e74c3c"; hover_color   = "#c0392b"; pressed_color = "#962d22";
       button_icon = style()->standardIcon(QStyle::SP_DialogCancelButton);
       color = "white";
       break;
-    case Role::Run:  
+    case Role::Run:
       normal_color  = "#2cddc5"; hover_color   = "#22af9c"; pressed_color = "#167064";
       button_icon = style()->standardIcon(QStyle::SP_MediaPlay);
       color = "black";
       break;
 
-    case Role::Default: 
+    case Role::Default:
     default:
       normal_color  = "#3498db"; hover_color   = "#2980b9"; pressed_color = "#1c638e";
       button_icon = QIcon();

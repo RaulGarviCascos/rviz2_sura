@@ -59,17 +59,17 @@ private slots:
 private:
   bool is_enabled_;
   QString sensor_name_;
-  
+
   // Elementos UI
   QFrame *card_frame_;
   QLabel *led_indicator_;
   QLabel *name_label_;
   SuraButton *toggle_button_;
-  
+
   // Zona de información adaptable
   QWidget *info_container_;
   QVBoxLayout *info_layout_;
-  
+
   // Mapa para encontrar y actualizar los valores rápidamente por su clave (Key)
   QHash<QString, QLabel*> fields_map_;
 

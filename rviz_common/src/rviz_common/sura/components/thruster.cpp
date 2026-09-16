@@ -36,14 +36,14 @@ Thruster::Thruster(const QString &name, QWidget *parent)
 
   // --- CABECERA: LED + Nombre ---
   QHBoxLayout *header_layout = new QHBoxLayout();
-  
+
   // LED indicador (un QLabel redondo de 12x12)
   status_led_ = new QLabel(card_frame);
   status_led_->setFixedSize(12, 12);
 
   // Nombre del motor
   QLabel *title = new QLabel(thurtle_name, card_frame);
-  
+
   QFont name_font = title->font();
   name_font.setBold(true);
   name_font.setPointSize(11);
@@ -65,17 +65,17 @@ Thruster::Thruster(const QString &name, QWidget *parent)
   thruster_max_spin_ = new QDoubleSpinBox(card_frame);
   thruster_max_spin_->setRange(-10.0, 10.0);
   thruster_max_spin_->setSingleStep(0.1);
-  thruster_max_spin_->setValue(2.0); 
+  thruster_max_spin_->setValue(2.0);
 
   thruster_slider_ = new QSlider(Qt::Vertical, card_frame);
   thruster_slider_->setRange(static_cast<int>(thruster_min_spin_->value() * SCALE),
                              static_cast<int>(thruster_max_spin_->value() * SCALE));
   thruster_slider_->setValue(0);
   thruster_slider_->setTickPosition(QSlider::TicksBothSides);
-  thruster_slider_->setTickInterval(static_cast<int>(0.5 * SCALE)); 
-  thruster_slider_->setMinimumHeight(150); 
+  thruster_slider_->setTickInterval(static_cast<int>(0.5 * SCALE));
+  thruster_slider_->setMinimumHeight(150);
   thruster_slider_->setMaximumHeight(200); // Ajustado para que encaje perfectamente en el alto de la tarjeta
-  thruster_slider_->setFixedWidth(30);     
+  thruster_slider_->setFixedWidth(30);
 
   thruster_value_spin_ = new QDoubleSpinBox(card_frame);
   thruster_value_spin_->setRange(thruster_min_spin_->value(), thruster_max_spin_->value());
@@ -119,10 +119,10 @@ Thruster::Thruster(const QString &name, QWidget *parent)
   form_layout->setLabelAlignment(Qt::AlignLeft);
   form_layout->setFormAlignment(Qt::AlignHCenter);
   form_layout->setSpacing(6);
-  
+
   QLabel *lbl_max = new QLabel(tr("Límite Máx:"), card_frame);
   lbl_max->setStyleSheet("color: #718093; font-size: 11px; font-weight: bold;");
-  
+
   QLabel *lbl_min = new QLabel(tr("Límite Mín:"), card_frame);
   lbl_min->setStyleSheet("color: #718093; font-size: 11px; font-weight: bold;");
 
@@ -148,7 +148,7 @@ Thruster::Thruster(const QString &name, QWidget *parent)
 
 void Thruster::onRunButtonClicked()
 {
-  is_running_ = run_button_->isChecked(); 
+  is_running_ = run_button_->isChecked();
   updateLedStyle();
   emit runningChanged(is_running_);
 }

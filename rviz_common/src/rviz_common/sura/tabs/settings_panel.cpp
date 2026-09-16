@@ -2,7 +2,7 @@
 #include "rviz_common/visualization_frame.hpp"
 #include "rviz_common/visualization_manager.hpp"
 #include <QVBoxLayout>
-#include "../components/sura_button.hpp" 
+#include "../components/sura_button.hpp"
 #include <QGroupBox>
 #include <QComboBox>
 #include <QCheckBox>
@@ -18,7 +18,7 @@
 SettingsPanel::SettingsPanel(rviz_common::VisualizationFrame * frame, QWidget *parent)
   : QWidget(parent), frame_(frame)
 {
-  
+
   RobotConfig r_config = frame_->getManager()->getRobotConfig();
   QString robot_name = r_config.robot_name;
   QString user_name =  r_config.user;
@@ -41,7 +41,7 @@ SettingsPanel::SettingsPanel(rviz_common::VisualizationFrame * frame, QWidget *p
   settings_grid_->setVerticalSpacing(20);
   scroll_widget->setLayout(settings_grid_);
 
-  QFont title_font = this->font(); 
+  QFont title_font = this->font();
   title_font.setBold(true);
   title_font.setPointSize(15);
 
@@ -51,10 +51,10 @@ SettingsPanel::SettingsPanel(rviz_common::VisualizationFrame * frame, QWidget *p
   // ==========================================================
   // CAJA GENERAL CONTENEDORA (Ocupa la fila 0 del layout principal)
   // ==========================================================
-  QGroupBox *general_box = new QGroupBox(scroll_widget);  
+  QGroupBox *general_box = new QGroupBox(scroll_widget);
   QVBoxLayout *general_layout = new QVBoxLayout(general_box);
-  general_layout->setSpacing(15);            
-  general_layout->setContentsMargins(15, 20, 15, 25); 
+  general_layout->setSpacing(15);
+  general_layout->setContentsMargins(15, 20, 15, 25);
 
   general_box->setStyleSheet(
     "QGroupBox {"
@@ -63,7 +63,7 @@ SettingsPanel::SettingsPanel(rviz_common::VisualizationFrame * frame, QWidget *p
     "  border-radius: 8px;"
     "}"
   );
-  general_box->setFixedWidth(600); 
+  general_box->setFixedWidth(600);
   // ==========================================================
   // BLOQUE 1: PROJECT SETTINGS (Fila 0 del layout principal)
   // ==========================================================
@@ -86,36 +86,36 @@ SettingsPanel::SettingsPanel(rviz_common::VisualizationFrame * frame, QWidget *p
 
   // QPushButton *folder_button = new QPushButton(tr("Folder"), box_project_settings);
   // connect(folder_button, &QPushButton::clicked, this, &SettingsPanel::onSelectWorkspace);
-  // grid_project_settings->addWidget(folder_button,1,2);  
+  // grid_project_settings->addWidget(folder_button,1,2);
   // grid_project_settings->setVerticalSpacing(12);
   get_file_button_ = new SuraButton(SuraButton::Role::Default, tr("Get xacro"), this);
   get_file_button_->setCheckable(true);
   get_file_button_->setFixedWidth(568);
   connect(get_file_button_, &SuraButton::clicked, this, &SettingsPanel::onGetFileClicked);
-  grid_project_settings->addWidget(get_file_button_,1,2);  
+  grid_project_settings->addWidget(get_file_button_,1,2);
   grid_project_settings->setVerticalSpacing(12);
 
   QLabel *lbl_ws = new QLabel(tr("Xacro file:"), box_project_settings);
   description_file_= new QLineEdit(tr("%1").arg(file_path),box_project_settings);
-  grid_project_settings->addWidget(lbl_ws, 2, 0); 
-  grid_project_settings->addWidget(description_file_, 2, 1); 
-  
+  grid_project_settings->addWidget(lbl_ws, 2, 0);
+  grid_project_settings->addWidget(description_file_, 2, 1);
+
   QLabel *lbl_robot_name = new QLabel(tr("Robot Name:"), box_project_settings);
   input_name_ = new QLineEdit(tr("%1").arg(robot_name),box_project_settings);
-  grid_project_settings->addWidget(lbl_robot_name, 3, 0);  
-  grid_project_settings->addWidget(input_name_, 3, 1); 
+  grid_project_settings->addWidget(lbl_robot_name, 3, 0);
+  grid_project_settings->addWidget(input_name_, 3, 1);
 
   QLabel *lbl_user_name = new QLabel(tr("Pi User Name:"), box_project_settings);
   user_name_ = new QLineEdit(tr("%1").arg(user_name),box_project_settings);
-  grid_project_settings->addWidget(lbl_user_name, 4, 0);  
-  grid_project_settings->addWidget(user_name_, 4, 1); 
+  grid_project_settings->addWidget(lbl_user_name, 4, 0);
+  grid_project_settings->addWidget(user_name_, 4, 1);
 
   QLabel *lbl_pass = new QLabel(tr("Password:"), box_project_settings);
   input_pass_ = new QLineEdit(tr("%1").arg(user_pass),box_project_settings);
   input_pass_->setEchoMode(QLineEdit::Password);
   input_pass_->setPlaceholderText(tr("Enter FTP password..."));
-  QString normal_color  = "#3498db"; 
-  QString hover_color   = "#2980b9"; 
+  QString normal_color  = "#3498db";
+  QString hover_color   = "#2980b9";
   QString pressed_color = "#1c638e";
   QPushButton *eye_button = new QPushButton("",box_project_settings);
   QPixmap pixmap_eye_opened = rviz_common::loadPixmap("package://rviz_common/icons/opened_eye.svg");
@@ -146,18 +146,18 @@ SettingsPanel::SettingsPanel(rviz_common::VisualizationFrame * frame, QWidget *p
     ).arg(normal_color, hover_color, pressed_color)
   );
   eye_button->setIcon(*opened_eye_icon);
-  
+
   connect(eye_button, &QPushButton::clicked, this, [this, eye_button]() {
     if (input_pass_->echoMode() == QLineEdit::Password) {
-      input_pass_->setEchoMode(QLineEdit::Normal);  
-      eye_button->setIcon(*closed_eye_icon);              
+      input_pass_->setEchoMode(QLineEdit::Normal);
+      eye_button->setIcon(*closed_eye_icon);
     } else {
-      input_pass_->setEchoMode(QLineEdit::Password); 
-      eye_button->setIcon(*opened_eye_icon);             
+      input_pass_->setEchoMode(QLineEdit::Password);
+      eye_button->setIcon(*opened_eye_icon);
     }
   });
 
-  grid_project_settings->addWidget(lbl_pass, 5, 0);  
+  grid_project_settings->addWidget(lbl_pass, 5, 0);
   grid_project_settings->addWidget(input_pass_, 5, 1);
   grid_project_settings->addWidget(eye_button, 5, 2);
 
@@ -180,7 +180,7 @@ SettingsPanel::SettingsPanel(rviz_common::VisualizationFrame * frame, QWidget *p
   line->setFrameShape(QFrame::HLine);
   line->setFrameShadow(QFrame::Sunken);
   line->setMaximumWidth(width_panel);
-  
+
   // Añadimos la línea justo debajo de la primera caja
   general_layout->addWidget(line, 0, Qt::AlignHCenter);
 
@@ -215,7 +215,7 @@ SettingsPanel::SettingsPanel(rviz_common::VisualizationFrame * frame, QWidget *p
   box_sura_settings->setFixedWidth(568);
   general_layout->addWidget(box_sura_settings, 0, Qt::AlignHCenter);
 
- 
+
   btn_save_ = new SuraButton(SuraButton::Role::Success, tr("Save"), this);
   btn_save_->setCheckable(true);
   btn_save_->setFixedWidth(568);
@@ -230,8 +230,8 @@ SettingsPanel::SettingsPanel(rviz_common::VisualizationFrame * frame, QWidget *p
   // Añadimos la segunda caja al layout principal (Fila 2)
   scroll_area_ = new QScrollArea(this);
   scroll_area_->setWidget(scroll_widget);
-  scroll_area_->setWidgetResizable(true); 
-  scroll_area_->setFrameShape(QFrame::NoFrame); 
+  scroll_area_->setWidgetResizable(true);
+  scroll_area_->setFrameShape(QFrame::NoFrame);
   scroll_area_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   scroll_area_->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   main_layout->addWidget(scroll_area_);
@@ -244,7 +244,7 @@ void SettingsPanel::onSelectWorkspace()
 {
   // Abrimos el selector de carpetas
   QString dir_path = QFileDialog::getExistingDirectory(
-    this, 
+    this,
     tr("Select Workspace Directory"),                 // Título de la ventana
     QString::fromStdString("./"),                     // Ruta inicial por defecto
     QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks // Opciones
@@ -253,7 +253,7 @@ void SettingsPanel::onSelectWorkspace()
   // Si el usuario no ha cancelado la ventana...
   if (!dir_path.isEmpty()) {
     // Aquí dir_path ya contiene la ruta absoluta (ej: "/home/raul/mi_workspace")
-    description_file_->setText(dir_path); 
+    description_file_->setText(dir_path);
     RCLCPP_INFO(rclcpp::get_logger("rviz2"), "Dir changed to: %s",dir_path.toStdString().c_str());
 
   }
@@ -286,9 +286,9 @@ void SettingsPanel::onGetFileClicked(){
   QString file_name = tr("%1.urdf.xacro").arg(string_robot_name);
   QString string_description_file = (description_file_->text().contains(file_name))?description_file_->text():tr("%1/%2.urdf.xacro").arg(description_file_->text(),string_robot_name);
   RCLCPP_INFO(rclcpp::get_logger("rviz2"), "Trying to get the file: %s", string_description_file.toStdString().c_str());
-  if (!string_ip_robot.isEmpty() && !string_robot_name.isEmpty() && 
+  if (!string_ip_robot.isEmpty() && !string_robot_name.isEmpty() &&
       !string_pass.isEmpty() && !string_user_name.isEmpty() && !string_description_file.isEmpty()) {
-    
+
     QString target_dir = QDir::homePath() + "/.cirtesu/xacros";
 
     // 2. Creamos la estructura de carpetas si no existe
@@ -296,8 +296,8 @@ void SettingsPanel::onGetFileClicked(){
     if (!dir.mkpath(target_dir)) {
       RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "Could not create directory path: %s", target_dir.toStdString().c_str());
       QMessageBox::critical(
-        this, 
-        tr("Directory Error"), 
+        this,
+        tr("Directory Error"),
         tr("Failed to create folder path on:\n%1").arg(target_dir)
       );
       return;
@@ -311,22 +311,22 @@ void SettingsPanel::onGetFileClicked(){
     QString path_to_save = local_output_path_;
     QProcess *ftp_process = new QProcess(this);
     QStringList arguments;
-    arguments << "--connect-timeout" << "10" 
+    arguments << "--connect-timeout" << "10"
               << "-k"
               << "-u" << QString("%1:%2").arg(string_user_name, string_pass)
               << QString("sftp://%1/%2").arg(string_ip_robot, string_description_file)
               << "-o" << local_output_path_;
 
-    
+
     connect(ftp_process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
             this, [this, ftp_process, path_to_save](int exitCode, QProcess::ExitStatus exitStatus) {
-        
+
         if (exitCode == 0 && exitStatus == QProcess::NormalExit) {
           // ¡Éxito total!
           RCLCPP_INFO(rclcpp::get_logger("rviz2"), "FTP Download finished successfully: %s", path_to_save.toStdString().c_str());
           QMessageBox::information(
-            this, 
-            tr("Download Successful"), 
+            this,
+            tr("Download Successful"),
             tr("The description file has been downloaded successfully to:\n%1").arg(path_to_save)
           );
           emit xacroUpdated();
@@ -334,23 +334,23 @@ void SettingsPanel::onGetFileClicked(){
           QString error_output = ftp_process->readAllStandardError();
           RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "SFTP Download failed: %s", error_output.toStdString().c_str());
           QMessageBox::critical(
-            this, 
-            tr("Download Failed"), 
+            this,
+            tr("Download Failed"),
             tr("Could not fetch the file from the robot.\n\nError Log:\n%1").arg(error_output.isEmpty() ? "Timeout or host unreachable" : error_output)
           );
         }
-        
+
         ftp_process->deleteLater();
     });
     ftp_process->start("curl", arguments);
-    
+
     return;
 
   } else {
     QMessageBox::warning(
-      this, 
-      tr("Missing Fields"), 
-      tr("Please, ensure all configuration fields (IP, Name, User, Password, File and Workspace) are filled before fetching.") 
+      this,
+      tr("Missing Fields"),
+      tr("Please, ensure all configuration fields (IP, Name, User, Password, File and Workspace) are filled before fetching.")
     );
     return;
   }

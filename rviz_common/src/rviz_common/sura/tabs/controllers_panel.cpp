@@ -6,24 +6,20 @@
 #include <rcl_interfaces/srv/get_parameters.hpp>
 #include <rcl_interfaces/srv/list_parameters.hpp>
 
-ControllersPanel::ControllersPanel(rviz_common::VisualizationManager * manager, QWidget * parent)
-: QWidget(parent), manager_(manager), fetching_in_progress_(false)
+ControllersPanel::ControllersPanel(std::shared_ptr<SuraContext> context, QWidget * parent)
+: QWidget(parent), context_(std::move(context)), fetching_in_progress_(false)
 {
-  auto node_abs = manager_->getRosNodeAbstraction().lock();
-  if (node_abs) {
-    ros_node_ = node_abs->get_raw_node();
-  } else {
-    RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "ControllersPanel: No se pudo obtener el nodo de ROS 2.");
+  if (!context_ || !context_->isValid()) {
+    RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "ControllersPanel: SURA context is not available.");
     return;
   }
+  ros_node_ = context_->node();
 
   buildUI();
 
     // En ControllersPanel::ControllersPanel(...)
-  QString robot_name = manager_->getRobotConfig().robot_name;
-
-  std::string list_srv = "/" + robot_name.toStdString() + "/controller/controller_manager/list_controllers";
-  std::string switch_srv = "/" + robot_name.toStdString() + "/controller/controller_manager/switch_controller";
+  std::string list_srv = context_->controllerManagerService("list_controllers");
+  std::string switch_srv = context_->controllerManagerService("switch_controller");
 
   list_controllers_client_ = ros_node_->create_client<controller_manager_msgs::srv::ListControllers>(list_srv);
   switch_controller_client_ = ros_node_->create_client<controller_manager_msgs::srv::SwitchController>(switch_srv);
@@ -40,8 +36,7 @@ void ControllersPanel::buildUI()
 {
   QVBoxLayout * main_layout = new QVBoxLayout(this);
 
-  QString robot_name = manager_->getRobotConfig().robot_name;
-  title_label_ = new QLabel(tr("Controllers Panel - %1").arg(robot_name), this);
+  title_label_ = new QLabel(tr("Controllers Panel - %1").arg(context_->robotName()), this);
   title_label_->setAlignment(Qt::AlignCenter);
   title_label_->setStyleSheet("font-size: 18pt; font-weight: bold; margin: 10px;");
   main_layout->addWidget(title_label_);
@@ -99,8 +94,7 @@ void ControllersPanel::checkControllersStatus()
             }
             else {
               // 🆕 SI NO EXISTE: Pedimos parámetros para crear la tarjeta por primera vez
-              QString robot_name = manager_->getRobotConfig().robot_name;
-              QString full_node_path = QString("/%1/controller/%2").arg(robot_name, ctrl_name);
+              QString full_node_path = QString::fromStdString(context_->controllerNodePath(ctrl_name));
 
               if (!ctrl_name.contains("broadcaster", Qt::CaseInsensitive) &&
                   !ctrl_type.contains("broadcaster", Qt::CaseInsensitive))
@@ -123,7 +117,8 @@ void ControllersPanel::requestNodeParameters(
   const QString & ctrl_type)
 {
   std::string std_node_path = node_path.toStdString();
-  auto list_client = ros_node_->create_client<rcl_interfaces::srv::ListParameters>(std_node_path + "/list_parameters");
+  auto list_client = ros_node_->create_client<rcl_interfaces::srv::ListParameters>(
+    std_node_path + "/list_parameters");
 
   auto list_req = std::make_shared<rcl_interfaces::srv::ListParameters::Request>();
   list_req->depth = 0;
@@ -277,8 +272,6 @@ void ControllersPanel::handleControllerSwitch(const QString & controller_name, b
     return;
   }
   if (!ros_node_) return;
-
-  QString robot_name = manager_->getRobotConfig().robot_name;
 
   if (!switch_controller_client_->wait_for_service(std::chrono::milliseconds(300))) {
     RCLCPP_ERROR(ros_node_->get_logger(), "Servicio switch_controller no disponible");

@@ -1,15 +1,18 @@
 #include "sensor_panel.hpp"
 #include <QVBoxLayout>
-#include "rviz_common/visualization_manager.hpp"
-#include "rviz_common/ros_integration/ros_node_abstraction_iface.hpp"
 #include "controller_manager_msgs/srv/list_controllers.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include <QTimer>
 
-SensorPanel::SensorPanel(rviz_common::VisualizationManager * manager, QWidget *parent)
-  : QWidget(parent), manager_(manager), current_calculated_columns_(-1) // Inicializamos a -1
+SensorPanel::SensorPanel(std::shared_ptr<SuraContext> context, QWidget *parent)
+  : QWidget(parent), context_(std::move(context)), current_calculated_columns_(-1)
 {
-  QString robot_name = manager_->getRobotConfig().robot_name;
+  if (!context_ || !context_->isValid()) {
+    RCLCPP_ERROR(rclcpp::get_logger("rviz2"), "SensorPanel: SURA context is not available.");
+    return;
+  }
+
+  QString robot_name = context_->robotName();
 
   // Layout principal del panel
   QVBoxLayout *main_layout = new QVBoxLayout(this);
@@ -46,12 +49,11 @@ SensorPanel::SensorPanel(rviz_common::VisualizationManager * manager, QWidget *p
   // =========================================================================
   // INTEGRACIÓN ROS 2: Cliente para consultar estado de controladores
   // =========================================================================
-  auto ros_node = manager_->getRosNodeAbstraction().lock()->get_raw_node();
-
-  std::string base_service_path = "/" + robot_name.toStdString() + "/controller/controller_manager/";
-
-  list_controllers_client_ = ros_node->create_client<controller_manager_msgs::srv::ListControllers>(base_service_path + "list_controllers");
-  switch_controller_client_ = ros_node->create_client<controller_manager_msgs::srv::SwitchController>(base_service_path + "switch_controller");
+  const auto & ros_node = context_->node();
+  list_controllers_client_ = ros_node->create_client<controller_manager_msgs::srv::ListControllers>(
+    context_->controllerManagerService("list_controllers"));
+  switch_controller_client_ = ros_node->create_client<controller_manager_msgs::srv::SwitchController>(
+    context_->controllerManagerService("switch_controller"));
 
 
   // Timer para consultar periódicamente el estado de forma asíncrona (cada 2 segundos)

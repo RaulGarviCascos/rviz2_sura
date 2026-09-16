@@ -251,6 +251,7 @@ add_library(rviz_common SHARED
   src/rviz_common/sura/tabs/sensor_panel.cpp
   src/rviz_common/sura/components/sura_urdf_parser.cpp
   src/rviz_common/sura/components/controller_card_widget.cpp
+  src/rviz_common/sura/components/sura_context.cpp
   src/rviz_common/sura/tabs/controllers_panel.cpp
 )
 

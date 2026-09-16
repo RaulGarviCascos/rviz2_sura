@@ -12,20 +12,19 @@
 #include <QResizeEvent>
 #include <memory>
 
-#include <rviz_common/visualization_manager.hpp>
-#include <rviz_common/ros_integration/ros_node_abstraction_iface.hpp>
 #include <controller_manager_msgs/srv/list_controllers.hpp>
 #include <controller_manager_msgs/srv/switch_controller.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 // Importamos la tarjeta
 #include "../components/controller_card_widget.hpp"
+#include "../components/sura_context.hpp"
 
 class ControllersPanel : public QWidget {
   Q_OBJECT
 
 public:
-  explicit ControllersPanel(rviz_common::VisualizationManager * manager, QWidget *parent = nullptr);
+  explicit ControllersPanel(std::shared_ptr<SuraContext> context, QWidget *parent = nullptr);
 
   // Método para añadir manualmente o actualizar la lista de controladores
   void addOrUpdateController(const ControllerInfo & info);
@@ -41,7 +40,7 @@ private:
   void requestNodeParameters(const QString & ctrl_name, const QString & node_name, const QString & ctrl_state, const QString & ctrl_type);
   void handleControllerSwitch(const QString & controller_name, bool enable);
   void buildUI();
-  rviz_common::VisualizationManager * manager_{nullptr};
+  std::shared_ptr<SuraContext> context_;
   rclcpp::Node::SharedPtr ros_node_;
 
   // UI elements

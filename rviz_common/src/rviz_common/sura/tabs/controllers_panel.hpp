@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RVIZ_COMMON__SURA__TABS__CONTROLLERS_PANEL_HPP_
+#define RVIZ_COMMON__SURA__TABS__CONTROLLERS_PANEL_HPP_
 
 #include <QWidget>
 #include <QLabel>
@@ -64,3 +65,5 @@ private:
   QList<ControllerCardWidget*> controllers_list_;
   bool fetching_in_progress_{false};
 };
+
+#endif  // RVIZ_COMMON__SURA__TABS__CONTROLLERS_PANEL_HPP_

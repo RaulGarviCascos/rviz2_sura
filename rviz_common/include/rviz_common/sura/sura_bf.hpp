@@ -27,8 +27,8 @@ class RVIZ_COMMON_PUBLIC SuraBF : public QObject
   Q_OBJECT
 public:
 explicit SuraBF(
-  rviz_common::VisualizationFrame * frame, 
-  QObject * parent = nullptr             
+  rviz_common::VisualizationFrame * frame,
+  QObject * parent = nullptr
 );
   virtual ~SuraBF();
 
@@ -43,7 +43,7 @@ signals:
 
 public Q_SLOTS:
   void reloadXacro();
-  
+
 private:
   QWidget * createSensorsWidget();
   QWidget * createGraphicsWidget();
@@ -54,7 +54,7 @@ private:
   void fetchParametersForControllers();
   void requestNodeParameters(const QString & node_name, int controller_index);
   void detachTab(int index);
-  
+
   rviz_common::VisualizationFrame * frame_;
   rviz_common::VisualizationManager * manager_;
 

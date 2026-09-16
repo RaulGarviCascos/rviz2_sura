@@ -38,10 +38,10 @@ public:
 
 private:
   rviz_common::VisualizationManager * manager_;
-  void rearrangeGrid();                      
-  int current_calculated_columns_ = -1;      
+  void rearrangeGrid();
+  int current_calculated_columns_ = -1;
   QList<Sensor*> sensors_list_;
-  
+
   QLabel *title_label_;
   QScrollArea *scroll_area_;
   QWidget *scroll_container_;

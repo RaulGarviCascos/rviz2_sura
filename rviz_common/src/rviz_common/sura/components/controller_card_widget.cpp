@@ -4,12 +4,12 @@
 #include <QToolButton>
 
 namespace{
-  
+
   rclcpp::ParameterValue parseValueFromText(const QString & text)
   {
     QString trimmed = text.trimmed();
     trimmed.replace(',', '.');
-    
+
     // 1. Detección de Booleanos
     if (trimmed.compare("true", Qt::CaseInsensitive) == 0) {
       return rclcpp::ParameterValue(true);
@@ -46,7 +46,7 @@ namespace{
 }
 
 ControllerCardWidget::ControllerCardWidget(
-  const ControllerInfo & info, 
+  const ControllerInfo & info,
   rclcpp::Node::SharedPtr ros_node)
 : info_(info), ros_node_(ros_node), is_enabled_(info.state.toLower() == "active")
 {
@@ -65,8 +65,8 @@ void ControllerCardWidget::buildUI()
   card_frame_->setStyleSheet(
     "QFrame {"
     "  background-color: #ffffff;"
-    "  border: 1px solid #e1e8ed;" 
-    "  border-radius: 12px;"       
+    "  border: 1px solid #e1e8ed;"
+    "  border-radius: 12px;"
     "}"
   );
 
@@ -189,7 +189,7 @@ void ControllerCardWidget::buildUI()
   divider2_->setVisible(false); //plegado por defecto
   card_layout->addWidget(divider2_);
 
-  
+
 
   // --- ZONA INFERIOR CON SURABUTTONS + SPINNER ---
   QVBoxLayout * bottom_layout = new QVBoxLayout();
@@ -288,7 +288,7 @@ void ControllerCardWidget::updateButtonStyle()
     toggle_button_->setRole(SuraButton::Role::Danger);
   } else {
     toggle_button_->setText("ON");
-    toggle_button_->setRole(SuraButton::Role::Default);    
+    toggle_button_->setRole(SuraButton::Role::Default);
   }
 }
 
@@ -317,13 +317,13 @@ void ControllerCardWidget::onApplyConfigClicked()
   for (auto it = param_inputs_.begin(); it != param_inputs_.end(); ++it) {
     std::string param_name = it.key().toStdString();
     QString raw_text = it.value()->text();
-    
+
     // 1. Convertimos el texto al ParameterValue con tipo correcto
     rclcpp::ParameterValue val = parseValueFromText(raw_text);
-    
+
     // 2. Creamos el rclcpp::Parameter
     rclcpp::Parameter param(param_name, val);
-    
+
     // 3. Lo convertimos al mensaje rcl_interfaces::msg::Parameter que espera la Request
     req->parameters.push_back(param.to_parameter_msg());
   }

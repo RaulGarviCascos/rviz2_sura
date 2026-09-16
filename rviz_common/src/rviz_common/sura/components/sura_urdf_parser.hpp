@@ -1,5 +1,5 @@
-#ifndef SURA_URDF_PARSER_HPP
-#define SURA_URDF_PARSER_HPP
+#ifndef RVIZ_COMMON__SURA__COMPONENTS__SURA_URDF_PARSER_HPP_
+#define RVIZ_COMMON__SURA__COMPONENTS__SURA_URDF_PARSER_HPP_
 
 #include <QString>
 #include <QList>
@@ -34,4 +34,4 @@ private:
   QList<SuraThrusterInfo> thrusters_;
 };
 
-#endif // SURA_URDF_PARSER_HPP
+#endif  // RVIZ_COMMON__SURA__COMPONENTS__SURA_URDF_PARSER_HPP_

@@ -1,12 +1,12 @@
-#ifndef Thrusters_PANEL_HPP
-#define Thrusters_PANEL_HPP
+#ifndef RVIZ_COMMON__SURA__TABS__THRUSTERS_PANEL_HPP_
+#define RVIZ_COMMON__SURA__TABS__THRUSTERS_PANEL_HPP_
 
 #include <QWidget>
 #include "../components/thruster.hpp"
 #include "std_msgs/msg/float64_multi_array.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "controller_manager_msgs/srv/switch_controller.hpp"
-#include <QScrollArea> 
+#include <QScrollArea>
 #include <QGridLayout>
 
 namespace rviz_common { class VisualizationManager; }
@@ -33,20 +33,20 @@ private:
   SuraButton *btn_save_;
   SuraButton *btn_arm_;
   bool is_armed_ = false;
-  void updateArmed(); 
-  QTimer *panel_timer_;  
+  void updateArmed();
+  QTimer *panel_timer_;
   QGridLayout *thrusters_grid_;
   QWidget *scroll_widget_;
   QScrollArea *scroll_area_;
-  int current_columns_ = 4; 
-  int current_calculated_columns_ = -1;      
+  int current_columns_ = 4;
+  int current_calculated_columns_ = -1;
   QList<Thruster*> thruster_list_;
   QMap<QString, Thruster*> thruster_map_;
 
 protected:
   void resizeEvent(QResizeEvent *event) override;
-  
+
 
 };
 
-#endif // ThrusterS_PANEL_HPP
+#endif  // RVIZ_COMMON__SURA__TABS__THRUSTERS_PANEL_HPP_
